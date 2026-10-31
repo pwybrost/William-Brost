@@ -12,8 +12,8 @@ interface ModalProps {
 }
 
 /**
- * A Windows 2000 style dialog window built on the native <dialog> element
- * (focus trapping and Esc-to-close come for free). The maximize button really maximizes.
+ * A Windows 98 dialog built on the native <dialog> element (focus trapping and
+ * Esc-to-close come for free). The maximize button really maximizes.
  */
 export function Modal({ open, title, onClose, children, wide, icon }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -29,7 +29,7 @@ export function Modal({ open, title, onClose, children, wide, icon }: ModalProps
 
   const size = maximized
     ? "h-[calc(100dvh-1rem)] max-h-none w-[calc(100%-1rem)] max-w-none"
-    : `w-[calc(100%-2rem)] ${wide ? "max-w-3xl" : "max-w-lg"}`;
+    : `max-h-[calc(100dvh-2rem)] w-[calc(100%-1.5rem)] ${wide ? "max-w-3xl" : "max-w-lg"}`;
 
   return (
     <dialog
@@ -39,7 +39,7 @@ export function Modal({ open, title, onClose, children, wide, icon }: ModalProps
         e.preventDefault();
         onClose();
       }}
-      className={`bevel m-auto flex-col p-[3px] backdrop:bg-black/70 backdrop:backdrop-blur-[1px] open:flex ${size}`}
+      className={`win-raised m-auto flex-col p-[3px] shadow-[var(--wb-shadow)] backdrop:bg-black/45 open:flex open:animate-pop ${size}`}
     >
       {open && (
         <>
@@ -50,13 +50,7 @@ export function Modal({ open, title, onClose, children, wide, icon }: ModalProps
             maximized={maximized}
             onClose={onClose}
           />
-          <div className={`modal-body mt-[3px] overflow-y-auto p-5 ${maximized ? "flex-1" : "max-h-[78dvh]"}`}>
-            {children}
-          </div>
-          <div className="statusbar">
-            <span className="flex-1">Ready</span>
-            <span>Esc = close</span>
-          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-6">{children}</div>
         </>
       )}
     </dialog>

@@ -30,6 +30,10 @@ export interface Profile {
   availability: string;
   avatarMediaId: string | null;
   coverMediaId: string | null;
+  /** custom desktop wallpaper; null = the built-in hills wallpaper */
+  wallpaperMediaId: string | null;
+  /** uploaded resume PDF */
+  resumeMediaId: string | null;
   updatedAt: string;
 }
 
@@ -71,6 +75,10 @@ export interface Project {
   status: ProjectStatus;
   /** false = draft, only the owner can see it */
   published: boolean;
+  /** case-study sections, all optional */
+  problem: string;
+  process: string;
+  outcome: string;
   createdAt: string;
   updatedAt: string;
   links: Link[];
@@ -102,7 +110,31 @@ export interface Portfolio {
   experience: TimelineEntry[];
   education: TimelineEntry[];
   achievements: TimelineEntry[];
+  products: Product[];
 }
+
+export type ProductStatus = "available" | "coming_soon" | "sold_out";
+
+export const PRODUCT_STATUS_LABELS: Record<ProductStatus, string> = {
+  available: "Available",
+  coming_soon: "Coming soon",
+  sold_out: "Sold out",
+};
+
+export interface Product {
+  id: string;
+  name: string;
+  tagline: string;
+  price: string;
+  url: string;
+  mediaId: string | null;
+  status: ProductStatus;
+  published: boolean;
+  sortOrder: number;
+  createdAt: string;
+}
+
+export type ProductInput = Omit<Product, "id" | "createdAt">;
 
 export interface Message {
   id: string;

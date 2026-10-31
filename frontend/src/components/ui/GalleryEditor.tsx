@@ -61,19 +61,19 @@ export function GalleryEditor({ images, onChange }: Props) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="label text-phosphor-dim">
+        <span className="text-[14px] font-semibold">
           Gallery ({images.length}/{MAX_IMAGES})
         </span>
         <button
           type="button"
-          className="btn-lcd"
+          className="win-button"
           disabled={Boolean(busy) || images.length >= MAX_IMAGES}
           onClick={() => inputRef.current?.click()}
         >
-          + Add images...
+          Add images...
         </button>
       </div>
-      <p className="text-xs text-muted">
+      <p className="text-[13px] text-muted">
         Screenshots, design boards, posters, mockups. You can select several files at once. The first image shows first
         in the gallery.
       </p>
@@ -81,17 +81,15 @@ export function GalleryEditor({ images, onChange }: Props) {
       {busy && <SavingProgress percent={progress} label={busy} />}
 
       {images.length === 0 ? (
-        <div className="bevel-inset flex h-28 items-center justify-center bg-black">
-          <span className="label text-[#c0c0c0]">No images</span>
-        </div>
+        <div className="win-sunken flex h-28 items-center justify-center text-[14px] text-muted">No images yet</div>
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2">
           {images.map((img, i) => (
-            <li key={img.mediaId} className="bevel-inset flex gap-3 bg-black/40 p-2">
-              <img src={mediaUrl(img.mediaId) ?? ""} alt="" className="size-20 shrink-0 bg-black object-cover" />
+            <li key={img.mediaId} className="win-sunken flex gap-3 p-2">
+              <img src={mediaUrl(img.mediaId) ?? ""} alt="" className="size-20 shrink-0 object-cover" />
               <div className="flex min-w-0 flex-1 flex-col gap-2">
                 <input
-                  className="input py-1 text-xs"
+                  className="win-field"
                   placeholder="Caption (optional)"
                   value={img.caption}
                   maxLength={200}
@@ -101,27 +99,22 @@ export function GalleryEditor({ images, onChange }: Props) {
                 <div className="flex gap-1">
                   <button
                     type="button"
-                    className="btn-lcd px-2 py-1"
+                    className="win-button px-3"
                     onClick={() => move(i, -1)}
                     aria-label="Move earlier"
                   >
                     ◀
                   </button>
-                  <button
-                    type="button"
-                    className="btn-lcd px-2 py-1"
-                    onClick={() => move(i, 1)}
-                    aria-label="Move later"
-                  >
+                  <button type="button" className="win-button px-3" onClick={() => move(i, 1)} aria-label="Move later">
                     ▶
                   </button>
                   <button
                     type="button"
-                    className="btn-lcd px-2 py-1 text-rec"
+                    className="win-button px-3"
                     onClick={() => onChange(images.filter((_, idx) => idx !== i))}
                     aria-label="Remove image"
                   >
-                    DEL
+                    ×
                   </button>
                 </div>
               </div>
@@ -131,8 +124,8 @@ export function GalleryEditor({ images, onChange }: Props) {
       )}
 
       {errors.map((e) => (
-        <p key={e} className="text-xs text-rec">
-          ! {e}
+        <p key={e} role="alert" className="text-[13px] text-danger">
+          {e}
         </p>
       ))}
 

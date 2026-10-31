@@ -3,6 +3,8 @@ import type {
   Message,
   MessageInput,
   Portfolio,
+  Product,
+  ProductInput,
   Profile,
   Project,
   ProjectInput,
@@ -69,6 +71,9 @@ export function errorMessage(err: unknown): string {
 
 export const mediaUrl = (id: string | null | undefined) => (id ? `${API_BASE}/api/media/${id}` : null);
 
+/** Link that makes the browser download a stored file (used for the resume PDF). */
+export const downloadUrl = (id: string) => `${API_BASE}/api/media/${id}?download=1`;
+
 export const api = {
   // auth
   me: () => request<{ user: User }>("/api/auth/me"),
@@ -86,7 +91,7 @@ export const api = {
   project: (id: string) => request<{ project: Project }>(`/api/projects/${id}`),
 
   // owner-only writes
-  /** Uploads an image. `onProgress` gets 0-100 (fetch can't report upload progress, so this uses XHR). */
+  /** Uploads an image or PDF. `onProgress` gets 0-100 (fetch can't report upload progress, so this uses XHR). */
   uploadImage: (file: File, onProgress?: (percent: number) => void) =>
     new Promise<{ id: string }>((resolve, reject) => {
       const form = new FormData();
@@ -130,6 +135,11 @@ export const api = {
   updateTimeline: (id: string, e: TimelineInput) =>
     request<{ entry: TimelineEntry }>(`/api/timeline/${id}`, { method: "PUT", json: e }),
   deleteTimeline: (id: string) => request<void>(`/api/timeline/${id}`, { method: "DELETE" }),
+
+  createProduct: (p: ProductInput) => request<{ product: Product }>("/api/products", { method: "POST", json: p }),
+  updateProduct: (id: string, p: ProductInput) =>
+    request<{ product: Product }>(`/api/products/${id}`, { method: "PUT", json: p }),
+  deleteProduct: (id: string) => request<void>(`/api/products/${id}`, { method: "DELETE" }),
 
   // contact form (anyone) + inbox (owner only)
   sendMessage: (m: MessageInput) => request<{ ok: true }>("/api/messages", { method: "POST", json: m }),

@@ -35,6 +35,10 @@ const projectSchema = z.object({
   year: z.string().trim().max(20).default(""),
   status: z.enum(PROJECT_STATUSES).default("completed"),
   published: z.boolean().default(true),
+  // Case-study sections (all optional).
+  problem: z.string().trim().max(10000).default(""),
+  process: z.string().trim().max(10000).default(""),
+  outcome: z.string().trim().max(10000).default(""),
   // Optional: a project can have zero links / images, or as many as needed.
   links: z.array(linkSchema).max(20).default([]),
   images: z.array(imageSchema).max(40).default([]),
@@ -87,6 +91,9 @@ const columnValues = (p: ProjectInput) => [
   p.year,
   p.status,
   p.published,
+  p.problem,
+  p.process,
+  p.outcome,
 ];
 
 projectsRouter.get("/:id", async (req, res) => {
@@ -109,8 +116,8 @@ projectsRouter.post("/", requireAdmin, async (req, res) => {
     const { rows } = await db.query<ProjectRow>(
       `INSERT INTO projects
          (title, summary, description, tech_stack, cover_media_id, featured, sort_order,
-          category, role, year, status, published)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+          category, role, year, status, published, problem, process, outcome)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`,
       columnValues(p),
     );
     const links = await replaceLinks(db, rows[0].id, p.links);
@@ -132,8 +139,8 @@ projectsRouter.put("/:id", requireAdmin, async (req, res) => {
       `UPDATE projects SET
          title = $1, summary = $2, description = $3, tech_stack = $4, cover_media_id = $5,
          featured = $6, sort_order = $7, category = $8, role = $9, year = $10, status = $11,
-         published = $12, updated_at = now()
-       WHERE id = $13 RETURNING *`,
+         published = $12, problem = $13, process = $14, outcome = $15, updated_at = now()
+       WHERE id = $16 RETURNING *`,
       [...columnValues(p), id],
     );
     const links = await replaceLinks(db, id, p.links);

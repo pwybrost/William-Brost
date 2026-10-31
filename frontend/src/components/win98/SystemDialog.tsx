@@ -8,7 +8,6 @@ type Kind = "confirm" | "error" | "info";
 interface DialogOptions {
   title?: string;
   message: string;
-  /** button labels, e.g. ["Yes", "No"] */
   okLabel?: string;
   cancelLabel?: string;
 }
@@ -38,13 +37,10 @@ const ICONS: Record<Kind, ReactNode> = {
 const DEFAULT_TITLES: Record<Kind, string> = {
   confirm: "Confirm",
   error: "Error",
-  info: "Setup",
+  info: "William Brost",
 };
 
-/**
- * Windows 98 message boxes (warning / error / completed) that replace the browser's
- * plain confirm() and alert() popups.
- */
+/** Windows 98 message boxes that replace the browser's plain confirm() and alert(). */
 export function SystemDialogProvider({ children }: { children: ReactNode }) {
   const [req, setReq] = useState<Request | null>(null);
   const ref = useRef<HTMLDialogElement>(null);
@@ -77,37 +73,35 @@ export function SystemDialogProvider({ children }: { children: ReactNode }) {
       {children}
       <dialog
         ref={ref}
+        role="alertdialog"
+        aria-describedby="system-dialog-message"
         onCancel={(e) => {
           e.preventDefault();
           finish(false);
         }}
-        className="win98 win-raised m-auto w-[calc(100%-2rem)] max-w-sm p-[3px] backdrop:bg-black/40"
+        className="win-raised m-auto w-[calc(100%-2rem)] max-w-md p-[3px] shadow-[var(--wb-shadow)] backdrop:bg-black/40 open:animate-pop"
       >
         {req && (
           <>
-            <TitleBar title={req.title ?? DEFAULT_TITLES[req.kind]} icon={null} onClose={() => finish(false)} />
-            <div className="flex items-center gap-4 px-4 pt-5 pb-4">
+            <TitleBar title={req.title ?? DEFAULT_TITLES[req.kind]} onClose={() => finish(false)} />
+            <div className="flex items-center gap-4 px-5 pt-6 pb-5">
               {ICONS[req.kind]}
-              <p className="text-[12px] whitespace-pre-line">{req.message}</p>
+              <p id="system-dialog-message" className="text-[15px] whitespace-pre-line">
+                {req.message}
+              </p>
             </div>
-            <div className="flex justify-center gap-2 pb-3">
+            <div className="flex justify-center gap-2 pb-4">
               {req.kind === "confirm" ? (
                 <>
-                  <button type="button" className="win-button min-w-20" onClick={() => finish(true)} autoFocus>
-                    <span>
-                      <u>{(req.okLabel ?? "Yes")[0]}</u>
-                      {(req.okLabel ?? "Yes").slice(1)}
-                    </span>
+                  <button type="button" className="win-button-primary min-w-24" onClick={() => finish(true)} autoFocus>
+                    {req.okLabel ?? "Yes"}
                   </button>
-                  <button type="button" className="win-button min-w-20" onClick={() => finish(false)}>
-                    <span>
-                      <u>{(req.cancelLabel ?? "No")[0]}</u>
-                      {(req.cancelLabel ?? "No").slice(1)}
-                    </span>
+                  <button type="button" className="win-button min-w-24" onClick={() => finish(false)}>
+                    {req.cancelLabel ?? "No"}
                   </button>
                 </>
               ) : (
-                <button type="button" className="win-button min-w-20" onClick={() => finish(true)} autoFocus>
+                <button type="button" className="win-button-primary min-w-24" onClick={() => finish(true)} autoFocus>
                   {req.okLabel ?? "OK"}
                 </button>
               )}

@@ -2,16 +2,29 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="William Brost: portfolio, projects and more." />
-    <meta name="theme-color" content="#0d0e10" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="William Brost: developer and designer. Portfolio, projects, products and contact." />
+    <meta name="theme-color" content="#c0c0c0" />
+    <meta property="og:title" content="William Brost" />
+    <meta property="og:description" content="Portfolio, projects, products and contact." />
+    <meta property="og:type" content="website" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Silkscreen&family=VT323&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Pixelify+Sans:wght@400..700&display=swap"
       rel="stylesheet"
     />
+    <script>
+      // Apply the saved light/dark theme before the page paints (no flash of the wrong theme).
+      (function () {
+        try {
+          var mode = localStorage.getItem("wb_theme") || "system";
+          var dark = mode === "dark" || (mode === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.dataset.theme = dark ? "dark" : "light";
+        } catch (e) {}
+      })();
+    </script>
     <title>William Brost</title>
   </head>
   <body>

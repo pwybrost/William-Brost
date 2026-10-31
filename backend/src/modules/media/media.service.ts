@@ -4,7 +4,11 @@ import { query } from "../../db/pool.js";
 type Db = Pick<PoolClient, "query">;
 
 const UNUSED = `
-  NOT EXISTS (SELECT 1 FROM profile  p WHERE p.avatar_media_id = m.id OR p.cover_media_id = m.id)
+  NOT EXISTS (
+    SELECT 1 FROM profile p
+    WHERE m.id IN (p.avatar_media_id, p.cover_media_id, p.wallpaper_media_id, p.resume_media_id)
+  )
+  AND NOT EXISTS (SELECT 1 FROM products pd WHERE pd.media_id = m.id)
   AND NOT EXISTS (SELECT 1 FROM projects pr WHERE pr.cover_media_id = m.id)
   AND NOT EXISTS (SELECT 1 FROM project_images pi WHERE pi.media_id = m.id)
 `;

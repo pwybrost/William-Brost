@@ -6,10 +6,17 @@ interface TagInputProps {
   value: string[];
   onChange: (tags: string[]) => void;
   placeholder?: string;
+  hint?: string;
 }
 
-/** Type a tag and press Enter or comma to add it. Backspace on empty input removes the last one. */
-export function TagInput({ label, value, onChange, placeholder }: TagInputProps) {
+/** Type a tag and press Enter or comma to add it. Backspace on an empty input removes the last one. */
+export function TagInput({
+  label,
+  value,
+  onChange,
+  placeholder,
+  hint = "Press Enter or comma to add.",
+}: TagInputProps) {
   const id = useId();
   const [draft, setDraft] = useState("");
 
@@ -30,20 +37,20 @@ export function TagInput({ label, value, onChange, placeholder }: TagInputProps)
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="label text-phosphor-dim">
+      <label htmlFor={id} className="text-[14px] font-semibold">
         {label}
       </label>
-      <div className="input flex flex-wrap items-center gap-1.5">
+      <div className="win-field flex flex-wrap items-center gap-1.5">
         {value.map((tag) => (
-          <span key={tag} className="chip">
+          <span key={tag} className="win-chip py-0.5">
             {tag}
             <button
               type="button"
-              className="cursor-pointer hover:text-rec"
+              className="cursor-pointer px-0.5 text-[15px] leading-none hover:text-danger"
               onClick={() => onChange(value.filter((t) => t !== tag))}
               aria-label={`Remove ${tag}`}
             >
-              x
+              ×
             </button>
           </span>
         ))}
@@ -54,10 +61,10 @@ export function TagInput({ label, value, onChange, placeholder }: TagInputProps)
           onKeyDown={onKeyDown}
           onBlur={add}
           placeholder={value.length ? "" : placeholder}
-          className="min-w-24 flex-1 bg-transparent outline-none placeholder:text-phosphor-dim"
+          className="min-w-32 flex-1 bg-transparent py-0.5 outline-none placeholder:text-muted"
         />
       </div>
-      <p className="text-xs text-muted">Press Enter or comma to add.</p>
+      <p className="text-[13px] text-muted">{hint}</p>
     </div>
   );
 }

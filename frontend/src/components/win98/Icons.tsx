@@ -158,3 +158,89 @@ export function WindowsLogo({ size = 16, className }: IconProps) {
     </svg>
   );
 }
+
+export function PdfIcon({ size = 32, className }: IconProps) {
+  return (
+    <svg {...svg(size, className)}>
+      <path d="M7 2h13l6 6v22H7z" fill="#fff" stroke="#000" />
+      <path d="M20 2v6h6" fill="#dfdfdf" stroke="#000" />
+      <rect x="4" y="15" width="18" height="8" fill="#c8102e" />
+      <path d="M6 17h2.5v1.5H7v2.5H6zM10 17h2l1 1v2l-1 1h-2zM15 17h3v1h-2v1h2v1h-2v1h-1z" fill="#fff" />
+      <path d="M10 26h12" stroke="#808080" />
+    </svg>
+  );
+}
+
+export function GearIcon({ size = 32, className }: IconProps) {
+  return (
+    <svg {...svg(size, className)} shapeRendering="geometricPrecision">
+      <path
+        d="M14 3h4l1 4 3 1.5 3.5-2 3 3-2 3.5L28 16l3 1v4l-3 1-1.5 3 2 3.5-3 3-3.5-2L19 29l-1 3h-4l-1-3-3-1.5-3.5 2-3-3 2-3.5L4 20l-3-1v-4l3-1 1.5-3-2-3.5 3-3 3.5 2L13 7z"
+        transform="scale(0.94) translate(1 0)"
+        fill="#c0c0c0"
+        stroke="#000"
+        strokeWidth="1.2"
+      />
+      <circle cx="16" cy="16.5" r="5" fill="#1084d0" stroke="#000" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
+export function InboxIcon({ size = 32, className }: IconProps) {
+  return (
+    <svg {...svg(size, className)}>
+      <path d="M3 18l5-12h16l5 12v9H3z" fill="#c0c0c0" stroke="#000" />
+      <path d="M3 18h8l2 3h6l2-3h8" fill="none" stroke="#000" />
+      <rect x="10" y="8" width="12" height="9" fill="#fff" stroke="#000" />
+      <path d="M10 8l6 5 6-5" fill="none" stroke="#000" />
+    </svg>
+  );
+}
+
+export function ShopIcon({ size = 32, className }: IconProps) {
+  return (
+    <svg {...svg(size, className)}>
+      <path d="M5 11h22l-2 18H7z" fill="#ffd400" stroke="#000" />
+      <path
+        d="M11 13V8a5 5 0 0 1 10 0v5"
+        fill="none"
+        stroke="#000"
+        strokeWidth="1.5"
+        shapeRendering="geometricPrecision"
+      />
+      <rect x="10" y="12" width="2" height="2" fill="#000" />
+      <rect x="20" y="12" width="2" height="2" fill="#000" />
+    </svg>
+  );
+}
+
+export function HourglassIcon({ size = 32, className }: IconProps) {
+  return (
+    <svg {...svg(size, className)}>
+      <rect x="7" y="3" width="18" height="3" fill="#808080" stroke="#000" />
+      <rect x="7" y="26" width="18" height="3" fill="#808080" stroke="#000" />
+      <path d="M9 6h14v4l-5 6 5 6v4H9v-4l5-6-5-6z" fill="#fff" stroke="#000" />
+      <path d="M11 22l5-4 5 4v2H11z" fill="#d9b23c" />
+      <path d="M12 9h8l-4 4z" fill="#d9b23c" />
+    </svg>
+  );
+}
+
+export function ThemeIcon({ size = 16, className, dark }: IconProps & { dark?: boolean }) {
+  return (
+    <svg {...svg(size, className)} shapeRendering="geometricPrecision">
+      {dark ? (
+        <path d="M20 4a12 12 0 1 0 8 19A10 10 0 0 1 20 4z" fill="#ffd400" stroke="currentColor" strokeWidth="1.5" />
+      ) : (
+        <>
+          <circle cx="16" cy="16" r="6" fill="#ffd400" stroke="currentColor" strokeWidth="1.5" />
+          <path
+            d="M16 2v5M16 25v5M2 16h5M25 16h5M6 6l3.5 3.5M22.5 22.5 26 26M6 26l3.5-3.5M22.5 9.5 26 6"
+            stroke="currentColor"
+            strokeWidth="2"
+          />
+        </>
+      )}
+    </svg>
+  );
+}
