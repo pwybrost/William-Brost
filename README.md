@@ -72,8 +72,11 @@ Edit `backend/.env`:
 - `DATABASE_URL`: the Neon connection string.
 - `JWT_SECRET`: a long random string. Generate one with
   `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`.
-- `ADMIN_EMAIL` / `ADMIN_PASSWORD`: **your owner login.** On every start the server makes sure this
-  account exists with admin rights and this password. To change your password, change it here and restart.
+- `ADMIN_EMAIL`: **the owner account**, `pwybrost@addu.edu.ph` (also the default if the line is missing).
+  On every start the server promotes this account to owner and demotes any other admin.
+  An account that already exists keeps its own password.
+- `ADMIN_PASSWORD` (optional): only used to *create* the owner account if nobody has signed up with
+  `ADMIN_EMAIL` yet. Leave it empty if you already signed up on the site.
 
 ## 3. Run it
 
@@ -105,16 +108,23 @@ Open <http://localhost:5173>.
 
 ## 4. Edit your portfolio
 
-1. On the login screen, **Sign in** with `ADMIN_EMAIL` / `ADMIN_PASSWORD`.
-2. Open **Portfolio**. Edit controls appear because you're the owner.
+1. Sign in with `pwybrost@addu.edu.ph` (your normal password from when you signed up).
+2. Open **Portfolio**. The owner bar and edit buttons appear because you're the owner.
 3. From there you can:
-   - change your name, headline, bio, location, public email, resume link and skills,
-   - upload or change your profile picture and cover photo,
-   - add, edit or remove account links (GitHub, LinkedIn, ...; as many as you want, reorderable),
-   - add projects with a cover image, summary, full description, tech stack, a "featured" pin,
-     and any number of optional links (live demo, repo, video...),
-   - add experience and education entries.
-4. Use the **Edit mode / Visitor view** toggle in the nav bar to preview the site as others see it.
+   - **Profile** (Identity / Photos / About tabs): name, headline, an availability badge such as
+     "Open to internships", location, public email, resume link, bio, skills, profile picture and cover photo.
+   - **Account links**: GitHub, LinkedIn, Behance, Instagram... as many as you want, reorderable.
+   - **Projects** (General / Images / Links / Publish tabs):
+     - type: **Graphic Design**, **Website**, **App** or **Other** (visitors can filter by type),
+     - title, summary, full description, your role, year, status (completed / in progress / concept),
+     - tech stack (or tools used, for design work),
+     - cover image plus a **gallery** of up to 40 images with captions (opens in a full-screen viewer),
+     - any number of optional links (live demo, repo, Behance, video...),
+     - **Published / Draft** (drafts are only visible to you), **Featured** pin, and order.
+   - **Experience**, **Education** and **Achievements** (certifications, awards, hackathons).
+4. Visitors can send you messages through the contact form. Read them on the **Inbox** page
+   (owner only; the nav bar shows the unread count).
+5. Use the **Edit mode / Visitor view** toggle in the nav bar to preview the site as others see it.
 
 The **Home** page (dashboard) only shows the "William Brost" title for now, ready for future products.
 
@@ -134,6 +144,8 @@ The **Home** page (dashboard) only shows the "William Brost" title for now, read
 | PUT    | `/api/social-links`      | owner  |
 | POST/PUT/DELETE | `/api/projects[/:id]` | owner |
 | POST/PUT/DELETE | `/api/timeline[/:id]` | owner |
+| POST   | `/api/messages`          | anyone (5 per hour per IP) |
+| GET/PATCH/DELETE | `/api/messages[/:id]` | owner |
 
 ## Notes
 

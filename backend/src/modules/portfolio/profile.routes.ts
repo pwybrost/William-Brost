@@ -16,6 +16,7 @@ const profileSchema = z.object({
   contactEmail: z.union([z.literal(""), z.string().trim().email()]).default(""),
   resumeUrl: optionalHttpUrl.default(""),
   skills: z.array(z.string().trim().min(1).max(40)).max(60).default([]),
+  availability: z.string().trim().max(60).default(""), // e.g. "Open to internships"
   avatarMediaId: z.string().uuid().nullable().default(null),
   coverMediaId: z.string().uuid().nullable().default(null),
 });
@@ -28,7 +29,8 @@ profileRouter.put("/profile", requireAdmin, async (req, res) => {
     const { rows } = await db.query<ProfileRow>(
       `UPDATE profile SET
          full_name = $1, headline = $2, bio = $3, location = $4, contact_email = $5,
-         resume_url = $6, skills = $7, avatar_media_id = $8, cover_media_id = $9, updated_at = now()
+         resume_url = $6, skills = $7, avatar_media_id = $8, cover_media_id = $9,
+         availability = $10, updated_at = now()
        WHERE id = 1
        RETURNING *`,
       [
@@ -41,6 +43,7 @@ profileRouter.put("/profile", requireAdmin, async (req, res) => {
         [...new Set(p.skills)],
         p.avatarMediaId,
         p.coverMediaId,
+        p.availability,
       ],
     );
     // Drop replaced pictures so old uploads don't pile up in the database.

@@ -23,6 +23,10 @@
   --color-ink: #16171a;
   --color-text: #e6e1d3;
   --color-muted: #9a978e;
+  /* Windows 2000 title bar gradient */
+  --color-win-navy: #0a246a;
+  --color-win-blue: #3a6ea5;
+  --color-win-sky: #a6caf0;
 
   --font-display: "VT323", ui-monospace, monospace;
   --font-pixel: "Silkscreen", ui-monospace, monospace;
@@ -221,6 +225,78 @@
   line-height: 1.7;
   white-space: pre-line;
   color: var(--color-text);
+}
+
+/* ---------- Windows 2000 style window chrome ---------- */
+
+@utility titlebar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 24px;
+  padding: 3px 3px 3px 6px;
+  color: #fff;
+  background: linear-gradient(
+    90deg,
+    var(--color-win-navy) 0%,
+    var(--color-win-blue) 60%,
+    var(--color-win-sky) 100%
+  );
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* The little _ □ X buttons on the right of a title bar */
+@utility winbtn {
+  @apply bevel;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  &:active {
+    box-shadow:
+      inset 2px 2px 0 var(--color-silver-dark),
+      inset -2px -2px 0 var(--color-silver-light),
+      0 0 0 1px var(--color-ink);
+  }
+}
+
+/* Silver strip under a title bar holding buttons, like a window's toolbar */
+@utility menubar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 4px 6px;
+  background-color: var(--color-silver);
+  border-bottom: 1px solid var(--color-silver-dark);
+}
+
+/* Bottom status bar of a window */
+@utility statusbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 3px;
+  color: var(--color-ink);
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  & > * {
+    padding: 2px 8px;
+    box-shadow:
+      inset 1px 1px 0 var(--color-silver-dark),
+      inset -1px -1px 0 var(--color-silver-light);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

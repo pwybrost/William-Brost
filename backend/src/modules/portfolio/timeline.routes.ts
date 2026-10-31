@@ -4,13 +4,13 @@ import { query } from "../../db/pool.js";
 import { requireAdmin } from "../../middleware/auth.js";
 import { notFound } from "../../utils/httpError.js";
 import { parse, uuidParam } from "../../utils/validate.js";
-import { toTimeline, type TimelineRow } from "./portfolio.mappers.js";
+import { TIMELINE_KINDS, toTimeline, type TimelineRow } from "./portfolio.mappers.js";
 
-/** Work experience and education entries. */
+/** Work experience, education and achievement (certifications, awards) entries. */
 export const timelineRouter = Router();
 
 const entrySchema = z.object({
-  kind: z.enum(["experience", "education"]),
+  kind: z.enum(TIMELINE_KINDS),
   title: z.string().trim().min(1, "Title is required").max(120),
   organization: z.string().trim().max(120).default(""),
   location: z.string().trim().max(80).default(""),

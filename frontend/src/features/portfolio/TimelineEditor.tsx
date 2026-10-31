@@ -14,9 +14,15 @@ interface Props {
   onSaved: () => void;
 }
 
-const COPY = {
+const COPY: Record<TimelineKind, { title: string; org: string; noun: string; singleDate?: boolean }> = {
   experience: { title: "Role / position", org: "Company / organization", noun: "EXPERIENCE" },
   education: { title: "Degree / program", org: "School", noun: "EDUCATION" },
+  achievement: {
+    title: "Award / certification",
+    org: "Issued by",
+    noun: "ACHIEVEMENT",
+    singleDate: true,
+  },
 };
 
 export function TimelineEditor({ open, kind, entry, onClose, onSaved }: Props) {
@@ -81,10 +87,14 @@ function EntryForm({ kind, entry, onClose, onSaved }: Omit<Props, "open">) {
       <TextField label={copy.title} value={form.title} onChange={(e) => set("title", e.target.value)} required maxLength={120} />
       <TextField label={copy.org} value={form.organization} onChange={(e) => set("organization", e.target.value)} maxLength={120} />
       <TextField label="Location" value={form.location} onChange={(e) => set("location", e.target.value)} maxLength={80} />
-      <div className="grid grid-cols-2 gap-4">
-        <TextField label="Start" placeholder="Jun 2025" value={form.startDate} onChange={(e) => set("startDate", e.target.value)} maxLength={30} />
-        <TextField label="End" placeholder="Present" value={form.endDate} onChange={(e) => set("endDate", e.target.value)} maxLength={30} />
-      </div>
+      {copy.singleDate ? (
+        <TextField label="Date" placeholder="Mar 2026" value={form.startDate} onChange={(e) => set("startDate", e.target.value)} maxLength={30} />
+      ) : (
+        <div className="grid grid-cols-2 gap-4">
+          <TextField label="Start" placeholder="Jun 2025" value={form.startDate} onChange={(e) => set("startDate", e.target.value)} maxLength={30} />
+          <TextField label="End" placeholder="Present" value={form.endDate} onChange={(e) => set("endDate", e.target.value)} maxLength={30} />
+        </div>
+      )}
       <TextArea label="Description" value={form.description} onChange={(e) => set("description", e.target.value)} maxLength={5000} />
       <TextField
         label="Order"

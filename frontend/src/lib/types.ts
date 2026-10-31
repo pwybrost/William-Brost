@@ -21,9 +21,33 @@ export interface Profile {
   contactEmail: string;
   resumeUrl: string;
   skills: string[];
+  /** e.g. "Open to internships"; empty hides the badge */
+  availability: string;
   avatarMediaId: string | null;
   coverMediaId: string | null;
   updatedAt: string;
+}
+
+export type ProjectCategory = "graphic_design" | "website" | "app" | "other";
+export type ProjectStatus = "completed" | "in_progress" | "concept";
+
+export const CATEGORY_LABELS: Record<ProjectCategory, string> = {
+  graphic_design: "Graphic Design",
+  website: "Website",
+  app: "App",
+  other: "Other",
+};
+
+export const STATUS_LABELS: Record<ProjectStatus, string> = {
+  completed: "Completed",
+  in_progress: "In progress",
+  concept: "Concept",
+};
+
+export interface ProjectImage {
+  id?: string;
+  mediaId: string;
+  caption: string;
 }
 
 export interface Project {
@@ -35,14 +59,22 @@ export interface Project {
   coverMediaId: string | null;
   featured: boolean;
   sortOrder: number;
+  category: ProjectCategory;
+  /** your role on the project, e.g. "Designer & developer" */
+  role: string;
+  year: string;
+  status: ProjectStatus;
+  /** false = draft, only the owner can see it */
+  published: boolean;
   createdAt: string;
   updatedAt: string;
   links: Link[];
+  images: ProjectImage[];
 }
 
 export type ProjectInput = Omit<Project, "id" | "createdAt" | "updatedAt">;
 
-export type TimelineKind = "experience" | "education";
+export type TimelineKind = "experience" | "education" | "achievement";
 
 export interface TimelineEntry {
   id: string;
@@ -64,4 +96,24 @@ export interface Portfolio {
   projects: Project[];
   experience: TimelineEntry[];
   education: TimelineEntry[];
+  achievements: TimelineEntry[];
+}
+
+export interface Message {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  body: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface MessageInput {
+  name: string;
+  email: string;
+  subject: string;
+  body: string;
+  /** honeypot, must stay empty */
+  website: string;
 }

@@ -56,6 +56,12 @@ export function ProfileHeader({ profile, socialLinks, editing, onEditProfile, on
             {profile.fullName}
           </h1>
           {profile.headline && <p className="text-sm text-phosphor">{profile.headline}</p>}
+          {profile.availability && (
+            <span className="label mt-1 inline-flex items-center gap-2 self-start border border-phosphor/70 bg-lcd px-2 py-1 text-phosphor">
+              <span className="size-2 animate-blink rounded-full bg-phosphor shadow-[0_0_8px_#8dff6a]" aria-hidden />
+              {profile.availability}
+            </span>
+          )}
           <p className="label mt-1 flex flex-wrap gap-x-4 gap-y-1 text-muted">
             {profile.location && <span>⌖ {profile.location}</span>}
             {profile.contactEmail && (

@@ -6,6 +6,9 @@ const bool = z
   .default("false")
   .transform((v) => v === "true");
 
+/** `KEY=` in a .env file gives an empty string; treat that as "not set". */
+const emptyToUndefined = (v: unknown) => (v === "" ? undefined : v);
+
 const schema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   PORT: z.coerce.number().int().positive().default(4000),
@@ -16,8 +19,13 @@ const schema = z.object({
   COOKIE_SECURE: bool,
   COOKIE_SAMESITE: z.enum(["lax", "strict", "none"]).default("lax"),
   TRUST_PROXY: bool,
-  ADMIN_EMAIL: z.string().email().optional(),
-  ADMIN_PASSWORD: z.string().min(8, "ADMIN_PASSWORD must be at least 8 characters").optional(),
+  // The owner account. Defaults to William's email so the site works even if .env omits it.
+  ADMIN_EMAIL: z.preprocess(emptyToUndefined, z.string().email().default("pwybrost@addu.edu.ph")),
+  // Only used to CREATE the owner account if it doesn't exist yet. An existing account keeps its password.
+  ADMIN_PASSWORD: z.preprocess(
+    emptyToUndefined,
+    z.string().min(8, "ADMIN_PASSWORD must be at least 8 characters").optional(),
+  ),
   ADMIN_NAME: z.string().default("William Brost"),
   MAX_UPLOAD_MB: z.coerce.number().positive().default(5),
 });

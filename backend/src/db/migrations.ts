@@ -83,4 +83,49 @@ export const migrations: { id: string; sql: string }[] = [
       );
     `,
   },
+  {
+    id: "002_portfolio_upgrade",
+    sql: /* sql */ `
+      -- Project type, details, and draft/published state.
+      ALTER TABLE projects
+        ADD COLUMN category  TEXT NOT NULL DEFAULT 'website'
+          CHECK (category IN ('graphic_design', 'website', 'app', 'other')),
+        ADD COLUMN role      TEXT NOT NULL DEFAULT '',
+        ADD COLUMN year      TEXT NOT NULL DEFAULT '',
+        ADD COLUMN status    TEXT NOT NULL DEFAULT 'completed'
+          CHECK (status IN ('completed', 'in_progress', 'concept')),
+        ADD COLUMN published BOOLEAN NOT NULL DEFAULT true;
+
+      -- Image gallery per project (screenshots, design boards, mockups...).
+      CREATE TABLE project_images (
+        id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+        media_id   UUID NOT NULL REFERENCES media(id) ON DELETE CASCADE,
+        caption    TEXT NOT NULL DEFAULT '',
+        sort_order INTEGER NOT NULL DEFAULT 0
+      );
+      CREATE INDEX project_images_project_idx ON project_images(project_id);
+
+      -- "Open to internships" style status shown on the profile.
+      ALTER TABLE profile ADD COLUMN availability TEXT NOT NULL DEFAULT '';
+
+      -- Certifications, awards and achievements join experience/education.
+      ALTER TABLE timeline_entries DROP CONSTRAINT IF EXISTS timeline_entries_kind_check;
+      ALTER TABLE timeline_entries ADD CONSTRAINT timeline_entries_kind_check
+        CHECK (kind IN ('experience', 'education', 'achievement'));
+
+      -- Contact form messages, readable only by the owner.
+      CREATE TABLE messages (
+        id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name       TEXT NOT NULL,
+        email      TEXT NOT NULL,
+        subject    TEXT NOT NULL DEFAULT '',
+        body       TEXT NOT NULL,
+        user_id    UUID REFERENCES users(id) ON DELETE SET NULL,
+        is_read    BOOLEAN NOT NULL DEFAULT false,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      );
+      CREATE INDEX messages_created_idx ON messages(created_at DESC);
+    `,
+  },
 ];

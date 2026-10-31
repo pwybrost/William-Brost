@@ -3,6 +3,7 @@ import type { FormEvent } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router";
 import { ErrorLine, TextField } from "../components/ui/Field";
 import { DateStamp, LoadingScreen, RecDot } from "../components/ui/Misc";
+import { TitleBar } from "../components/ui/TitleBar";
 import { useAuth } from "../context/AuthContext";
 import { errorMessage } from "../lib/api";
 
@@ -63,13 +64,10 @@ export function AuthPage() {
           </p>
         </div>
 
-        <div className="bevel p-1">
-          <header className="flex items-center justify-between bg-body px-3 py-1.5 text-silver-light">
-            <span className="label">LOGIN.EXE</span>
-            <RecDot label="LIVE" />
-          </header>
+        <div className="bevel p-[3px]">
+          <TitleBar title="LOGIN.EXE" icon="⚿" extra={<RecDot label="LIVE" />} />
 
-          <div className="lcd bevel-inset scanlines mt-1 p-5">
+          <div className="lcd bevel-inset scanlines mt-[3px] p-5">
             <div className="relative z-[2] flex flex-col gap-5">
               <div className="grid grid-cols-2 gap-1" role="tablist">
                 {(["signin", "signup"] as const).map((t) => (

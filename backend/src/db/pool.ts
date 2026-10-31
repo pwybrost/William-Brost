@@ -1,4 +1,5 @@
 import pg from "pg";
+import type { PoolClient, QueryResultRow } from "pg";
 import { env } from "../config/env.js";
 
 // Neon connection strings already include `sslmode=require`, so SSL is negotiated automatically.
@@ -14,7 +15,7 @@ pool.on("error", (err) => {
   console.error("[db] idle client error:", err.message);
 });
 
-export async function query<T extends pg.QueryResultRow = pg.QueryResultRow>(
+export async function query<T extends QueryResultRow = QueryResultRow>(
   text: string,
   params: unknown[] = [],
 ) {
@@ -22,7 +23,7 @@ export async function query<T extends pg.QueryResultRow = pg.QueryResultRow>(
 }
 
 /** Runs `fn` inside a transaction and commits, or rolls back if it throws. */
-export async function withTransaction<T>(fn: (client: pg.PoolClient) => Promise<T>): Promise<T> {
+export async function withTransaction<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
