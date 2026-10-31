@@ -5,6 +5,11 @@ export interface User {
   email: string;
   displayName: string;
   role: Role;
+  /**
+   * true when this account's email equals the server's ADMIN_EMAIL.
+   * Missing on old backend versions (used to explain why owner tools are hidden).
+   */
+  ownerEmailMatches?: boolean;
 }
 
 export interface Link {

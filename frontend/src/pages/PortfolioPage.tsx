@@ -132,15 +132,35 @@ export function PortfolioPage() {
           <Window title="Owner account not active yet" icon={null} body="face" bodyClassName="p-4">
             <div className="flex items-start gap-4 text-[12px]">
               <ErrorIcon />
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1.5">
                 <p>
-                  You're signed in as <b>{OWNER_EMAIL}</b>, but the server hasn't made this account the owner yet, so
-                  the edit tools are hidden.
+                  You're signed in as <b>{OWNER_EMAIL}</b>, but the server still has this account as a regular user,
+                  so the edit tools are hidden.
                 </p>
-                <p>
-                  In <code>backend/.env</code> set <code>ADMIN_EMAIL={OWNER_EMAIL}</code> (or delete the line), restart
-                  the backend, then refresh this page.
-                </p>
+                {user?.ownerEmailMatches === false ? (
+                  <p>
+                    <b>Cause:</b> the backend's <code>ADMIN_EMAIL</code> is set to a different email. In{" "}
+                    <code>backend/.env</code> change it to <code>ADMIN_EMAIL={OWNER_EMAIL}</code> (or delete the line),
+                    restart the backend, then refresh this page.
+                  </p>
+                ) : (
+                  <>
+                    <p>
+                      <b>Cause:</b> the backend is still running an older version of the code. Stop it and start it
+                      again:
+                    </p>
+                    <ul className="ml-4 list-disc">
+                      <li>
+                        Docker: <code>docker compose up --build</code> (without <code>--build</code> Docker reuses the
+                        old image)
+                      </li>
+                      <li>
+                        No Docker: press Ctrl+C in the backend terminal, then <code>npm run dev</code>
+                      </li>
+                    </ul>
+                    <p>Then refresh this page.</p>
+                  </>
+                )}
               </div>
             </div>
           </Window>

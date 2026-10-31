@@ -1,7 +1,9 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
+import { env } from "../../config/env.js";
 import { query } from "../../db/pool.js";
+import { syncOwnerRole } from "../../db/seedAdmin.js";
 import { SESSION_COOKIE, requireAuth, sessionCookieOptions } from "../../middleware/auth.js";
 import { conflict, unauthorized } from "../../utils/httpError.js";
 import { signSession, type Role } from "../../utils/jwt.js";
@@ -40,12 +42,26 @@ interface UserRow {
   password_hash: string;
 }
 
+const isOwnerEmail = (e: string) => e.toLowerCase() === env.ADMIN_EMAIL.toLowerCase();
+
 const toUser = (u: UserRow) => ({
   id: u.id,
   email: u.email,
   displayName: u.display_name,
   role: u.role,
+  // Lets the frontend explain why the owner tools are missing. Never reveals ADMIN_EMAIL itself.
+  ownerEmailMatches: isOwnerEmail(u.email),
 });
+
+/**
+ * If this is the ADMIN_EMAIL account and it isn't the owner yet, promote it now,
+ * so a server restart isn't needed after signing up or changing ADMIN_EMAIL.
+ */
+async function withOwnerRole(u: UserRow): Promise<UserRow> {
+  if (u.role === "admin" || !isOwnerEmail(u.email)) return u;
+  await syncOwnerRole();
+  return { ...u, role: "admin" };
+}
 
 authRouter.post("/signup", authLimiter, async (req, res) => {
   const input = parse(signupSchema, req.body);
@@ -59,8 +75,8 @@ authRouter.post("/signup", authLimiter, async (req, res) => {
      RETURNING id, email, display_name, role, password_hash`,
     [input.email, hash, input.displayName],
   );
-  const user = rows[0];
-  if (!user) throw conflict("An account with that email already exists");
+  if (!rows[0]) throw conflict("An account with that email already exists");
+  const user = await withOwnerRole(rows[0]);
 
   res.cookie(SESSION_COOKIE, signSession({ sub: user.id, role: user.role }), sessionCookieOptions);
   res.status(201).json({ user: toUser(user) });
@@ -72,11 +88,11 @@ authRouter.post("/login", authLimiter, async (req, res) => {
     "SELECT id, email, display_name, role, password_hash FROM users WHERE email = $1",
     [input.email],
   );
-  const user = rows[0];
   // Same message for unknown email and wrong password, so emails can't be probed.
-  if (!user || !(await verifyPassword(input.password, user.password_hash))) {
+  if (!rows[0] || !(await verifyPassword(input.password, rows[0].password_hash))) {
     throw unauthorized("Wrong email or password");
   }
+  const user = await withOwnerRole(rows[0]);
 
   res.cookie(SESSION_COOKIE, signSession({ sub: user.id, role: user.role }), sessionCookieOptions);
   res.json({ user: toUser(user) });
@@ -94,5 +110,5 @@ authRouter.get("/me", requireAuth, async (req, res) => {
     [req.session!.sub],
   );
   if (!rows[0]) throw unauthorized("Account no longer exists");
-  res.json({ user: toUser(rows[0]) });
+  res.json({ user: toUser(await withOwnerRole(rows[0])) });
 });
