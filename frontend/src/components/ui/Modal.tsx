@@ -50,11 +50,7 @@ export function Modal({ open, title, onClose, children, wide, icon }: ModalProps
             maximized={maximized}
             onClose={onClose}
           />
-          <div
-            className={`lcd bevel-inset mt-[3px] overflow-y-auto p-5 ${
-              maximized ? "flex-1" : "max-h-[78dvh]"
-            }`}
-          >
+          <div className={`modal-body mt-[3px] overflow-y-auto p-5 ${maximized ? "flex-1" : "max-h-[78dvh]"}`}>
             {children}
           </div>
           <div className="statusbar">

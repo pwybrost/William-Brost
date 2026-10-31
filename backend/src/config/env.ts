@@ -9,6 +9,11 @@ const bool = z
 /** `KEY=` in a .env file gives an empty string; treat that as "not set". */
 const emptyToUndefined = (v: unknown) => (v === "" ? undefined : v);
 
+/** Old .env.example placeholder values that should fall back to the defaults. */
+const PLACEHOLDERS = new Set(["you@example.com", "change-me-to-something-strong"]);
+const unsetOrPlaceholder = (v: unknown) =>
+  typeof v === "string" && (v.trim() === "" || PLACEHOLDERS.has(v.trim().toLowerCase())) ? undefined : v;
+
 const schema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   PORT: z.coerce.number().int().positive().default(4000),
@@ -20,10 +25,10 @@ const schema = z.object({
   COOKIE_SAMESITE: z.enum(["lax", "strict", "none"]).default("lax"),
   TRUST_PROXY: bool,
   // The owner account. Defaults to William's email so the site works even if .env omits it.
-  ADMIN_EMAIL: z.preprocess(emptyToUndefined, z.string().email().default("pwybrost@addu.edu.ph")),
+  ADMIN_EMAIL: z.preprocess(unsetOrPlaceholder, z.string().trim().email().default("pwybrost@addu.edu.ph")),
   // Only used to CREATE the owner account if it doesn't exist yet. An existing account keeps its password.
   ADMIN_PASSWORD: z.preprocess(
-    emptyToUndefined,
+    unsetOrPlaceholder,
     z.string().min(8, "ADMIN_PASSWORD must be at least 8 characters").optional(),
   ),
   ADMIN_NAME: z.string().default("William Brost"),

@@ -109,22 +109,26 @@ Open <http://localhost:5173>.
 ## 4. Edit your portfolio
 
 1. Sign in with `pwybrost@addu.edu.ph` (your normal password from when you signed up).
-2. Open **Portfolio**. The owner bar and edit buttons appear because you're the owner.
-3. From there you can:
-   - **Profile** (Identity / Photos / About tabs): name, headline, an availability badge such as
-     "Open to internships", location, public email, resume link, bio, skills, profile picture and cover photo.
-   - **Account links**: GitHub, LinkedIn, Behance, Instagram... as many as you want, reorderable.
-   - **Projects** (General / Images / Links / Publish tabs):
-     - type: **Graphic Design**, **Website**, **App** or **Other** (visitors can filter by type),
+   The top bar shows **[owner]** next to your name when it worked. If the portfolio shows an
+   "Owner account not active yet" box instead, fix `ADMIN_EMAIL` in `backend/.env` and restart the backend.
+2. Open **Portfolio**. It's a Windows 98 style desktop. As the owner you get a **Control Panel** window
+   at the top with shortcuts for everything you can change:
+   - **Profile picture** / **Cover photo**: also changeable in one click with the *Change picture...* and
+     *Change cover...* buttons on the profile window (saves right away, with a progress bar).
+   - **Name & headline**, availability badge, location, public email, resume link.
+   - **Bio & skills** (shown in the `about.txt - Notepad` and `Skills` windows).
+   - **Account links** (shown as desktop shortcuts; as many as you want, reorderable).
+   - **New project** (also in the Projects Explorer toolbar). Each project has:
+     - type: **Graphic Design**, **Website**, **App** or **Other** (each type is a folder in the Explorer),
      - title, summary, full description, your role, year, status (completed / in progress / concept),
      - tech stack (or tools used, for design work),
-     - cover image plus a **gallery** of up to 40 images with captions (opens in a full-screen viewer),
+     - cover image plus a **gallery** of up to 40 images with captions (opens in the "Player" viewer),
      - any number of optional links (live demo, repo, Behance, video...),
      - **Published / Draft** (drafts are only visible to you), **Featured** pin, and order.
-   - **Experience**, **Education** and **Achievements** (certifications, awards, hackathons).
-4. Visitors can send you messages through the contact form. Read them on the **Inbox** page
-   (owner only; the nav bar shows the unread count).
-5. Use the **Edit mode / Visitor view** toggle in the nav bar to preview the site as others see it.
+   - **Add experience** (Command Prompt window), **Add education**, **Add achievement**.
+   - **Inbox**: messages visitors send through the contact form.
+3. Use the **Edit mode / Visitor view** toggle in the nav bar to preview the site as others see it.
+   The **Start** menu and taskbar at the bottom jump to each window.
 
 The **Home** page (dashboard) only shows the "William Brost" title for now, ready for future products.
 
