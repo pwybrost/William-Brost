@@ -67,8 +67,7 @@ export function errorMessage(err: unknown): string {
   return "Something went wrong";
 }
 
-export const mediaUrl = (id: string | null | undefined) =>
-  id ? `${API_BASE}/api/media/${id}` : null;
+export const mediaUrl = (id: string | null | undefined) => (id ? `${API_BASE}/api/media/${id}` : null);
 
 export const api = {
   // auth
@@ -87,11 +86,34 @@ export const api = {
   project: (id: string) => request<{ project: Project }>(`/api/projects/${id}`),
 
   // owner-only writes
-  uploadImage: (file: File) => {
-    const form = new FormData();
-    form.append("file", file);
-    return request<{ id: string }>("/api/media", { method: "POST", form });
-  },
+  /** Uploads an image. `onProgress` gets 0-100 (fetch can't report upload progress, so this uses XHR). */
+  uploadImage: (file: File, onProgress?: (percent: number) => void) =>
+    new Promise<{ id: string }>((resolve, reject) => {
+      const form = new FormData();
+      form.append("file", file);
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", `${API_BASE}/api/media`);
+      xhr.withCredentials = true; // send the session cookie
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) onProgress?.((e.loaded / e.total) * 100);
+      };
+      xhr.onload = () => {
+        let data: { id?: string; error?: string; details?: Record<string, string[] | undefined> } = {};
+        try {
+          data = JSON.parse(xhr.responseText);
+        } catch {
+          /* non-JSON response */
+        }
+        if (xhr.status >= 200 && xhr.status < 300 && data.id) {
+          onProgress?.(100);
+          resolve({ id: data.id });
+        } else {
+          reject(new ApiError(xhr.status, data.error ?? `Upload failed (${xhr.status})`, data.details));
+        }
+      };
+      xhr.onerror = () => reject(new ApiError(0, "Network error while uploading"));
+      xhr.send(form);
+    }),
   updateProfile: (p: Omit<Profile, "updatedAt">) =>
     request<{ profile: Profile }>("/api/profile", { method: "PUT", json: p }),
   updateSocialLinks: (links: Link[]) =>
@@ -104,15 +126,13 @@ export const api = {
   updateProject: (id: string, p: ProjectInput) =>
     request<{ project: Project }>(`/api/projects/${id}`, { method: "PUT", json: stripLinkIds(p) }),
   deleteProject: (id: string) => request<void>(`/api/projects/${id}`, { method: "DELETE" }),
-  createTimeline: (e: TimelineInput) =>
-    request<{ entry: TimelineEntry }>("/api/timeline", { method: "POST", json: e }),
+  createTimeline: (e: TimelineInput) => request<{ entry: TimelineEntry }>("/api/timeline", { method: "POST", json: e }),
   updateTimeline: (id: string, e: TimelineInput) =>
     request<{ entry: TimelineEntry }>(`/api/timeline/${id}`, { method: "PUT", json: e }),
   deleteTimeline: (id: string) => request<void>(`/api/timeline/${id}`, { method: "DELETE" }),
 
   // contact form (anyone) + inbox (owner only)
-  sendMessage: (m: MessageInput) =>
-    request<{ ok: true }>("/api/messages", { method: "POST", json: m }),
+  sendMessage: (m: MessageInput) => request<{ ok: true }>("/api/messages", { method: "POST", json: m }),
   messages: () => request<{ messages: Message[]; unread: number }>("/api/messages"),
   unreadCount: () => request<{ unread: number }>("/api/messages/unread-count"),
   markMessage: (id: string, isRead: boolean) =>

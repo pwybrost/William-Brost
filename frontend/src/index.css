@@ -31,6 +31,17 @@
   --font-display: "VT323", ui-monospace, monospace;
   --font-pixel: "Silkscreen", ui-monospace, monospace;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Windows 98 system font look-alike */
+  --font-win: Tahoma, Verdana, "Segoe UI", "MS Sans Serif", sans-serif;
+  --color-desktop: #008080;
+  --color-win-face: #c0c0c0;
+  --color-win-shadow: #808080;
+  --color-win-select: #000080;
+  --animate-progress: progress 1.6s steps(12) infinite;
+  @keyframes progress {
+    0% { width: 0%; }
+    100% { width: 100%; }
+  }
 
   --animate-blink: blink 1.1s steps(1) infinite;
   --animate-flicker: flicker 4s infinite;
@@ -296,6 +307,279 @@
     box-shadow:
       inset 1px 1px 0 var(--color-silver-dark),
       inset -1px -1px 0 var(--color-silver-light);
+  }
+}
+
+/* Body of a pop-up dialog (camera theme: green LCD; Windows 98 theme: grey) */
+@utility modal-body {
+  @apply lcd bevel-inset;
+}
+
+/* ---------- Windows 98 building blocks (portfolio section) ---------- */
+
+@utility win-raised {
+  background-color: #c0c0c0;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #ffffff,
+    inset -2px -2px #808080,
+    inset 2px 2px #dfdfdf;
+}
+
+@utility win-sunken {
+  background-color: #ffffff;
+  box-shadow:
+    inset -1px -1px #ffffff,
+    inset 1px 1px #808080,
+    inset -2px -2px #dfdfdf,
+    inset 2px 2px #0a0a0a;
+}
+
+/* Thin sunken border, used for status bar fields and the tray clock */
+@utility win-thin {
+  box-shadow:
+    inset -1px -1px #ffffff,
+    inset 1px 1px #808080;
+}
+
+@utility win-button {
+  @apply win-raised;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 23px;
+  padding: 0 12px;
+  color: #000;
+  font-family: var(--font-win);
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+  &:active:not(:disabled),
+  &[aria-pressed="true"] {
+    box-shadow:
+      inset -1px -1px #ffffff,
+      inset 1px 1px #0a0a0a,
+      inset -2px -2px #dfdfdf,
+      inset 2px 2px #808080;
+  }
+  &:focus-visible {
+    outline: 1px dotted #000;
+    outline-offset: -4px;
+  }
+  &:disabled {
+    color: #808080;
+    text-shadow: 1px 1px 0 #fff;
+    cursor: default;
+  }
+}
+
+/* Etched "group box" frame with a legend, like in Windows dialogs */
+@utility win-group {
+  border: 1px solid #808080;
+  box-shadow:
+    1px 1px 0 #ffffff,
+    inset 1px 1px 0 #ffffff;
+  padding: 12px;
+  & > legend {
+    padding: 0 4px;
+    font-family: var(--font-win);
+    font-size: 12px;
+  }
+}
+
+/* Property-sheet tab */
+@utility win-tab {
+  position: relative;
+  margin-top: 3px;
+  padding: 3px 12px 4px;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  background-color: #c0c0c0;
+  color: #000;
+  font-family: var(--font-win);
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow:
+    inset 1px 1px #ffffff,
+    inset -1px 0 #0a0a0a,
+    inset -2px 0 #808080;
+  &[aria-selected="true"] {
+    z-index: 1;
+    margin-top: 0;
+    margin-bottom: -2px;
+    padding-bottom: 7px;
+  }
+}
+
+/* Highlighted list item / icon label, like a selected file in Explorer */
+@utility win-select {
+  background-color: #000080;
+  color: #fff;
+}
+
+/*
+ * The portfolio section lives inside `.win98`. Re-pointing the theme colours here
+ * re-skins every shared component (fields, editors, panels) as Windows 98.
+ */
+@layer utilities {
+  .win98 {
+    --color-lcd: #ffffff;
+    --color-lcd-light: #ffffff;
+    --color-phosphor: #000000;
+    --color-phosphor-dim: #404040;
+    --color-body: #c0c0c0;
+    --color-body-light: #d4d0c8;
+    --color-silver: #c0c0c0;
+    --color-silver-light: #ffffff;
+    --color-silver-dark: #808080;
+    --color-ink: #000000;
+    --color-text: #000000;
+    --color-muted: #505050;
+    --color-amber: #000080;
+    --color-rec: #c00000;
+    font-family: var(--font-win);
+    color: #000;
+  }
+  .win98 .bevel {
+    background-color: #c0c0c0;
+    box-shadow:
+      inset -1px -1px #0a0a0a,
+      inset 1px 1px #ffffff,
+      inset -2px -2px #808080,
+      inset 2px 2px #dfdfdf;
+  }
+  .win98 .bevel-inset {
+    box-shadow:
+      inset -1px -1px #ffffff,
+      inset 1px 1px #808080,
+      inset -2px -2px #dfdfdf,
+      inset 2px 2px #0a0a0a;
+  }
+  .win98 .scanlines::after {
+    display: none;
+  }
+  .win98 .glow,
+  .win98 .chroma {
+    text-shadow: none;
+  }
+  .win98 .label,
+  .win98 .statusbar {
+    font-family: var(--font-win);
+    font-size: 11px;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .win98 .titlebar {
+    min-height: 22px;
+    padding: 2px 2px 2px 4px;
+    background: linear-gradient(90deg, #000080, #1084d0);
+    font-family: var(--font-win);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .win98 .winbtn {
+    width: 16px;
+    height: 14px;
+    font-size: 10px;
+  }
+  .win98 .btn,
+  .win98 .btn-lcd,
+  .win98 .btn-danger,
+  .win98 .winbtn {
+    background-color: #c0c0c0;
+    box-shadow:
+      inset -1px -1px #0a0a0a,
+      inset 1px 1px #ffffff,
+      inset -2px -2px #808080,
+      inset 2px 2px #dfdfdf;
+    font-family: var(--font-win);
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .win98 .btn,
+  .win98 .btn-lcd,
+  .win98 .btn-danger {
+    font-size: 12px;
+  }
+  .win98 .btn-lcd:hover:not(:disabled) {
+    background-color: #c0c0c0;
+  }
+  .win98 .btn-danger {
+    color: var(--color-rec);
+  }
+  .win98 .btn:active:not(:disabled),
+  .win98 .btn-lcd:active:not(:disabled),
+  .win98 .winbtn:active {
+    transform: none;
+    box-shadow:
+      inset -1px -1px #ffffff,
+      inset 1px 1px #0a0a0a,
+      inset -2px -2px #dfdfdf,
+      inset 2px 2px #808080;
+  }
+  .win98 .input {
+    box-shadow:
+      inset -1px -1px #ffffff,
+      inset 1px 1px #808080,
+      inset -2px -2px #dfdfdf,
+      inset 2px 2px #0a0a0a;
+    font-family: var(--font-win);
+    font-size: 13px;
+  }
+  .win98 .chip {
+    border-color: transparent;
+    background-color: #c0c0c0;
+    box-shadow:
+      inset -1px -1px #808080,
+      inset 1px 1px #ffffff;
+    color: #000;
+    font-family: var(--font-win);
+    font-size: 11px;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .win98 .menubar {
+    border-bottom: 0;
+  }
+  .win98 .modal-body {
+    background-color: #c0c0c0;
+    box-shadow: none;
+  }
+  /* Chunky grey Windows 98 scrollbars (Chrome/Edge/Safari; Firefox gets the colours) */
+  /* Only for Firefox: in Chrome, setting scrollbar-color would disable the styles below */
+  @supports not selector(::-webkit-scrollbar) {
+    .win98 * {
+      scrollbar-color: #c0c0c0 #dfdfdf;
+    }
+  }
+  .win98 ::-webkit-scrollbar {
+    width: 16px;
+    height: 16px;
+    background-color: #dfdfdf;
+    background-image: conic-gradient(#c0c0c0 25%, #fff 0 50%, #c0c0c0 0 75%, #fff 0);
+    background-size: 2px 2px;
+  }
+  .win98 ::-webkit-scrollbar-thumb {
+    background-color: #c0c0c0;
+    box-shadow:
+      inset -1px -1px #0a0a0a,
+      inset 1px 1px #ffffff,
+      inset -2px -2px #808080,
+      inset 2px 2px #dfdfdf;
+  }
+  .win98 ::-webkit-scrollbar-corner {
+    background-color: #c0c0c0;
+  }
+  .win98 ::selection {
+    background-color: #000080;
+    color: #fff;
+  }
+  .win98 :focus-visible {
+    outline: 1px dotted #000;
+    outline-offset: 2px;
   }
 }
 

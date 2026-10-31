@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { api, errorMessage, mediaUrl } from "../../lib/api";
+import { SavingProgress } from "../win98/ProgressBar";
 
 const MAX_MB = 5;
 const ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
@@ -14,8 +15,9 @@ interface ImageUploaderProps {
 
 export function ImageUploader({ label, value, onChange, aspect = "aspect-video" }: ImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const busy = progress !== null;
   const src = mediaUrl(value);
 
   const onFile = async (file: File | undefined) => {
@@ -25,14 +27,14 @@ export function ImageUploader({ label, value, onChange, aspect = "aspect-video" 
       setError(`Image must be under ${MAX_MB} MB`);
       return;
     }
-    setBusy(true);
+    setProgress(0);
     try {
-      const { id } = await api.uploadImage(file);
+      const { id } = await api.uploadImage(file, setProgress);
       onChange(id);
     } catch (err) {
       setError(errorMessage(err));
     } finally {
-      setBusy(false);
+      setProgress(null);
       if (inputRef.current) inputRef.current.value = "";
     }
   };
@@ -40,21 +42,23 @@ export function ImageUploader({ label, value, onChange, aspect = "aspect-video" 
   return (
     <div className="flex flex-col gap-1.5">
       <span className="label text-phosphor-dim">{label}</span>
-      <div className={`viewfinder bevel-inset relative flex ${aspect} w-full items-center justify-center overflow-hidden bg-black`}>
+      <div
+        className={`bevel-inset relative flex ${aspect} w-full items-center justify-center overflow-hidden bg-black`}
+      >
         {src ? (
           <img src={src} alt="" className="h-full w-full object-cover" />
         ) : (
-          <span className="label text-phosphor-dim">NO IMAGE</span>
+          <span className="label text-[#c0c0c0]">No image</span>
         )}
         {busy && (
-          <span className="label absolute inset-0 flex items-center justify-center bg-black/70 text-phosphor">
-            <span className="animate-blink">SAVING TO CARD...</span>
-          </span>
+          <div className="absolute inset-0 flex items-center justify-center bg-black/60 p-3">
+            <SavingProgress percent={progress} />
+          </div>
         )}
       </div>
       <div className="flex flex-wrap gap-2">
         <button type="button" className="btn-lcd" disabled={busy} onClick={() => inputRef.current?.click()}>
-          {src ? "Change" : "Upload"}
+          {src ? "Change..." : "Browse..."}
         </button>
         {src && (
           <button type="button" className="btn-lcd text-rec" disabled={busy} onClick={() => onChange(null)}>

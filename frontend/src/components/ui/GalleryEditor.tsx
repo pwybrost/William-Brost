@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { api, errorMessage, mediaUrl } from "../../lib/api";
 import type { ProjectImage } from "../../lib/types";
+import { SavingProgress } from "../win98/ProgressBar";
 
 const MAX_MB = 5;
 const MAX_IMAGES = 40;
@@ -15,6 +16,7 @@ interface Props {
 export function GalleryEditor({ images, onChange }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [progress, setProgress] = useState<number | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
 
   const onFiles = async (fileList: FileList | null) => {
@@ -24,13 +26,14 @@ export function GalleryEditor({ images, onChange }: Props) {
     const errs: string[] = [];
 
     for (const [i, file] of files.entries()) {
-      setBusy(`SAVING ${i + 1}/${files.length}...`);
+      setBusy(`Saving ${i + 1} of ${files.length}`);
+      setProgress(0);
       if (file.size > MAX_MB * 1024 * 1024) {
         errs.push(`${file.name}: larger than ${MAX_MB} MB`);
         continue;
       }
       try {
-        const { id } = await api.uploadImage(file);
+        const { id } = await api.uploadImage(file, setProgress);
         added.push({ mediaId: id, caption: "" });
       } catch (err) {
         errs.push(`${file.name}: ${errorMessage(err)}`);
@@ -40,6 +43,7 @@ export function GalleryEditor({ images, onChange }: Props) {
     onChange([...images, ...added]);
     setErrors(errs);
     setBusy(null);
+    setProgress(null);
     if (inputRef.current) inputRef.current.value = "";
   };
 
@@ -66,27 +70,25 @@ export function GalleryEditor({ images, onChange }: Props) {
           disabled={Boolean(busy) || images.length >= MAX_IMAGES}
           onClick={() => inputRef.current?.click()}
         >
-          {busy ? <span className="animate-blink">{busy}</span> : "+ Add images"}
+          + Add images...
         </button>
       </div>
       <p className="text-xs text-muted">
-        Screenshots, design boards, posters, mockups. You can select several files at once. The first image
-        shows first in the gallery.
+        Screenshots, design boards, posters, mockups. You can select several files at once. The first image shows first
+        in the gallery.
       </p>
+
+      {busy && <SavingProgress percent={progress} label={busy} />}
 
       {images.length === 0 ? (
         <div className="bevel-inset flex h-28 items-center justify-center bg-black">
-          <span className="label text-phosphor-dim">NO IMAGES</span>
+          <span className="label text-[#c0c0c0]">No images</span>
         </div>
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2">
           {images.map((img, i) => (
             <li key={img.mediaId} className="bevel-inset flex gap-3 bg-black/40 p-2">
-              <img
-                src={mediaUrl(img.mediaId) ?? ""}
-                alt=""
-                className="size-20 shrink-0 bg-black object-cover"
-              />
+              <img src={mediaUrl(img.mediaId) ?? ""} alt="" className="size-20 shrink-0 bg-black object-cover" />
               <div className="flex min-w-0 flex-1 flex-col gap-2">
                 <input
                   className="input py-1 text-xs"
@@ -97,10 +99,20 @@ export function GalleryEditor({ images, onChange }: Props) {
                   aria-label={`Caption for image ${i + 1}`}
                 />
                 <div className="flex gap-1">
-                  <button type="button" className="btn-lcd px-2 py-1" onClick={() => move(i, -1)} aria-label="Move earlier">
+                  <button
+                    type="button"
+                    className="btn-lcd px-2 py-1"
+                    onClick={() => move(i, -1)}
+                    aria-label="Move earlier"
+                  >
                     ◀
                   </button>
-                  <button type="button" className="btn-lcd px-2 py-1" onClick={() => move(i, 1)} aria-label="Move later">
+                  <button
+                    type="button"
+                    className="btn-lcd px-2 py-1"
+                    onClick={() => move(i, 1)}
+                    aria-label="Move later"
+                  >
                     ▶
                   </button>
                   <button
