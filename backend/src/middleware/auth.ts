@@ -33,20 +33,26 @@ export function loadSession(req: Request, _res: Response, next: NextFunction) {
   next();
 }
 
+/**
+ * Checks the role in the database rather than trusting the token, so promotions and
+ * demotions take effect immediately (e.g. an account promoted to owner after signing up).
+ */
+export async function isAdminRequest(req: Request): Promise<boolean> {
+  if (!req.session) return false;
+  const { rows } = await query<{ role: string }>("SELECT role FROM users WHERE id = $1", [
+    req.session.sub,
+  ]);
+  return rows[0]?.role === "admin";
+}
+
 export function requireAuth(req: Request, _res: Response, next: NextFunction) {
   if (!req.session) return next(unauthorized());
   next();
 }
 
-/**
- * Only the owner account (role = admin) gets past this. The role is re-checked in the
- * database so a demoted account loses access immediately, not when its token expires.
- */
+/** Only the owner account (role = admin) gets past this. */
 export async function requireAdmin(req: Request, _res: Response, next: NextFunction) {
   if (!req.session) return next(unauthorized());
-  const { rows } = await query<{ role: string }>("SELECT role FROM users WHERE id = $1", [
-    req.session.sub,
-  ]);
-  if (rows[0]?.role !== "admin") return next(forbidden());
+  if (!(await isAdminRequest(req))) return next(forbidden());
   next();
 }

@@ -1,30 +1,58 @@
+import { useState } from "react";
 import type { ReactNode } from "react";
+import { TitleBar } from "./TitleBar";
 
 interface PanelProps {
   title: string;
-  /** buttons shown on the right side of the title bar */
+  icon?: ReactNode;
+  /** buttons shown in the toolbar strip under the title bar */
   actions?: ReactNode;
   children: ReactNode;
   className?: string;
   bodyClassName?: string;
+  /** text shown in the bottom status bar */
+  status?: ReactNode;
+  /** remove the body padding (for edge-to-edge lists) */
+  flush?: boolean;
 }
 
-/** A window with a title bar, styled like an old camera menu screen / desktop app. */
-export function Panel({ title, actions, children, className = "", bodyClassName = "" }: PanelProps) {
+/**
+ * A Windows 2000 style window: title bar (with a working minimize button), optional toolbar,
+ * green LCD body and optional status bar.
+ */
+export function Panel({
+  title,
+  icon,
+  actions,
+  children,
+  className = "",
+  bodyClassName = "",
+  status,
+  flush,
+}: PanelProps) {
+  const [minimized, setMinimized] = useState(false);
+
   return (
-    <section className={`bevel p-1 ${className}`}>
-      <header className="flex items-center gap-3 bg-body px-3 py-1.5 text-silver-light">
-        <span className="flex gap-1" aria-hidden>
-          <span className="size-2 rounded-full bg-rec" />
-          <span className="size-2 rounded-full bg-amber" />
-          <span className="size-2 rounded-full bg-phosphor" />
-        </span>
-        <h2 className="label flex-1 truncate">{title}</h2>
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
-      </header>
-      <div className={`lcd bevel-inset scanlines mt-1 p-5 ${bodyClassName}`}>
-        <div className="relative z-[2]">{children}</div>
-      </div>
+    <section className={`bevel flex flex-col p-[3px] ${className}`}>
+      <TitleBar
+        title={title}
+        icon={icon}
+        minimized={minimized}
+        onMinimize={() => setMinimized((m) => !m)}
+      />
+      {!minimized && (
+        <>
+          {actions && <div className="menubar">{actions}</div>}
+          <div className={`lcd bevel-inset scanlines mt-[3px] flex-1 ${flush ? "" : "p-5"} ${bodyClassName}`}>
+            <div className="relative z-[2]">{children}</div>
+          </div>
+          {status && (
+            <div className="statusbar">
+              <span className="flex-1">{status}</span>
+            </div>
+          )}
+        </>
+      )}
     </section>
   );
 }

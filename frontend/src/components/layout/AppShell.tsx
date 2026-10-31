@@ -1,7 +1,30 @@
-import { NavLink, Outlet, useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 import { useEditMode } from "../../context/EditModeContext";
+import { api } from "../../lib/api";
+import { INBOX_CHANGED } from "../../lib/events";
 import { Battery, RecDot } from "../ui/Misc";
+
+/** Unread contact-form messages, for the owner's nav badge. */
+function useUnreadCount(enabled: boolean) {
+  const [unread, setUnread] = useState(0);
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    if (!enabled) return;
+    const refresh = () =>
+      api
+        .unreadCount()
+        .then((r) => setUnread(r.unread))
+        .catch(() => {});
+    refresh();
+    window.addEventListener(INBOX_CHANGED, refresh);
+    return () => window.removeEventListener(INBOX_CHANGED, refresh);
+  }, [enabled, pathname]);
+
+  return enabled ? unread : 0;
+}
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
   `label px-3 py-2 transition-colors ${
@@ -12,6 +35,7 @@ export function AppShell() {
   const { user, isAdmin, isGuest, logout } = useAuth();
   const { editing, toggle } = useEditMode();
   const navigate = useNavigate();
+  const unread = useUnreadCount(isAdmin);
 
   const onLogout = async () => {
     await logout();
@@ -33,6 +57,12 @@ export function AppShell() {
             <NavLink to="/portfolio" className={navClass}>
               Portfolio
             </NavLink>
+            {isAdmin && (
+              <NavLink to="/inbox" className={navClass}>
+                Inbox
+                {unread > 0 && <span className="ml-1.5 bg-rec px-1 text-white">{unread}</span>}
+              </NavLink>
+            )}
           </nav>
 
           <div className="ml-auto flex items-center gap-3 text-silver">

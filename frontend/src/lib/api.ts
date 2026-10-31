@@ -1,5 +1,7 @@
 import type {
   Link,
+  Message,
+  MessageInput,
   Portfolio,
   Profile,
   Project,
@@ -107,8 +109,22 @@ export const api = {
   updateTimeline: (id: string, e: TimelineInput) =>
     request<{ entry: TimelineEntry }>(`/api/timeline/${id}`, { method: "PUT", json: e }),
   deleteTimeline: (id: string) => request<void>(`/api/timeline/${id}`, { method: "DELETE" }),
+
+  // contact form (anyone) + inbox (owner only)
+  sendMessage: (m: MessageInput) =>
+    request<{ ok: true }>("/api/messages", { method: "POST", json: m }),
+  messages: () => request<{ messages: Message[]; unread: number }>("/api/messages"),
+  unreadCount: () => request<{ unread: number }>("/api/messages/unread-count"),
+  markMessage: (id: string, isRead: boolean) =>
+    request<{ message: Message }>(`/api/messages/${id}`, { method: "PATCH", json: { isRead } }),
+  deleteMessage: (id: string) => request<void>(`/api/messages/${id}`, { method: "DELETE" }),
 };
 
+/** The API only wants the editable fields of links and gallery images. */
 function stripLinkIds(p: ProjectInput) {
-  return { ...p, links: p.links.map(({ label, url }) => ({ label, url })) };
+  return {
+    ...p,
+    links: p.links.map(({ label, url }) => ({ label, url })),
+    images: p.images.map(({ mediaId, caption }) => ({ mediaId, caption })),
+  };
 }

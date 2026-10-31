@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { TitleBar } from "./TitleBar";
 
 interface ModalProps {
   open: boolean;
@@ -7,18 +8,28 @@ interface ModalProps {
   onClose: () => void;
   children: ReactNode;
   wide?: boolean;
+  icon?: ReactNode;
 }
 
-/** Uses the native <dialog> element: focus trapping and Esc-to-close come for free. */
-export function Modal({ open, title, onClose, children, wide }: ModalProps) {
+/**
+ * A Windows 2000 style dialog window built on the native <dialog> element
+ * (focus trapping and Esc-to-close come for free). The maximize button really maximizes.
+ */
+export function Modal({ open, title, onClose, children, wide, icon }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  const [maximized, setMaximized] = useState(false);
 
   useEffect(() => {
     const dialog = ref.current;
     if (!dialog) return;
     if (open && !dialog.open) dialog.showModal();
     if (!open && dialog.open) dialog.close();
+    if (!open) setMaximized(false);
   }, [open]);
+
+  const size = maximized
+    ? "h-[calc(100dvh-1rem)] max-h-none w-[calc(100%-1rem)] max-w-none"
+    : `w-[calc(100%-2rem)] ${wide ? "max-w-3xl" : "max-w-lg"}`;
 
   return (
     <dialog
@@ -28,25 +39,28 @@ export function Modal({ open, title, onClose, children, wide }: ModalProps) {
         e.preventDefault();
         onClose();
       }}
-      className={`bevel m-auto w-[calc(100%-2rem)] p-1 backdrop:bg-black/70 backdrop:backdrop-blur-[1px] ${
-        wide ? "max-w-3xl" : "max-w-lg"
-      }`}
+      className={`bevel m-auto flex-col p-[3px] backdrop:bg-black/70 backdrop:backdrop-blur-[1px] open:flex ${size}`}
     >
       {open && (
         <>
-          <header className="flex items-center gap-3 bg-body px-3 py-1.5 text-silver-light">
-            <span className="size-2 animate-blink rounded-full bg-rec" aria-hidden />
-            <h2 className="label flex-1 truncate">{title}</h2>
-            <button
-              type="button"
-              onClick={onClose}
-              className="label cursor-pointer px-1 hover:text-rec"
-              aria-label="Close"
-            >
-              [X]
-            </button>
-          </header>
-          <div className="lcd bevel-inset mt-1 max-h-[80dvh] overflow-y-auto p-5">{children}</div>
+          <TitleBar
+            title={title}
+            icon={icon}
+            onMaximize={() => setMaximized((m) => !m)}
+            maximized={maximized}
+            onClose={onClose}
+          />
+          <div
+            className={`lcd bevel-inset mt-[3px] overflow-y-auto p-5 ${
+              maximized ? "flex-1" : "max-h-[78dvh]"
+            }`}
+          >
+            {children}
+          </div>
+          <div className="statusbar">
+            <span className="flex-1">Ready</span>
+            <span>Esc = close</span>
+          </div>
         </>
       )}
     </dialog>

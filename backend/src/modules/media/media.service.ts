@@ -1,11 +1,12 @@
-import type pg from "pg";
+import type { PoolClient } from "pg";
 import { query } from "../../db/pool.js";
 
-type Db = Pick<pg.PoolClient, "query">;
+type Db = Pick<PoolClient, "query">;
 
 const UNUSED = `
   NOT EXISTS (SELECT 1 FROM profile  p WHERE p.avatar_media_id = m.id OR p.cover_media_id = m.id)
   AND NOT EXISTS (SELECT 1 FROM projects pr WHERE pr.cover_media_id = m.id)
+  AND NOT EXISTS (SELECT 1 FROM project_images pi WHERE pi.media_id = m.id)
 `;
 
 /** Deletes the given images if nothing references them any more. */

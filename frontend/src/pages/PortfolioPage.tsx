@@ -1,36 +1,59 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { Link as RouterLink } from "react-router";
 import { EditButton, LoadingScreen } from "../components/ui/Misc";
 import { Panel } from "../components/ui/Panel";
 import { useEditMode } from "../context/EditModeContext";
-import { ProfileEditor } from "../features/portfolio/ProfileEditor";
+import { ContactForm } from "../features/portfolio/ContactForm";
+import { ProfileEditor, type ProfileTab } from "../features/portfolio/ProfileEditor";
 import { ProfileHeader } from "../features/portfolio/ProfileHeader";
 import { ProjectCard } from "../features/portfolio/ProjectCard";
 import { ProjectEditor } from "../features/portfolio/ProjectEditor";
 import { SocialLinksEditor } from "../features/portfolio/SocialLinksEditor";
 import { TimelineEditor } from "../features/portfolio/TimelineEditor";
 import { TimelineSection } from "../features/portfolio/TimelineSection";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { usePortfolio } from "../hooks/usePortfolio";
 import { api, errorMessage } from "../lib/api";
-import type { Project, TimelineEntry, TimelineKind } from "../lib/types";
+import {
+  CATEGORY_LABELS,
+  type Project,
+  type ProjectCategory,
+  type TimelineEntry,
+  type TimelineKind,
+} from "../lib/types";
 
 type Dialog =
-  | { type: "profile" }
+  | { type: "profile"; tab: ProfileTab }
   | { type: "links" }
   | { type: "project"; project: Project | null }
   | { type: "timeline"; kind: TimelineKind; entry: TimelineEntry | null }
   | null;
 
+type Filter = "all" | ProjectCategory;
+
+const CATEGORY_ORDER: ProjectCategory[] = ["graphic_design", "website", "app", "other"];
+
 export function PortfolioPage() {
   const { data, error, loading, reload } = usePortfolio();
   const { editing } = useEditMode();
   const [dialog, setDialog] = useState<Dialog>(null);
+  const [filter, setFilter] = useState<Filter>("all");
   const close = () => setDialog(null);
+
+  useDocumentTitle("Portfolio");
+
+  const projects = data?.projects ?? [];
+  const counts = useMemo(() => {
+    const c: Record<ProjectCategory, number> = { graphic_design: 0, website: 0, app: 0, other: 0 };
+    for (const p of projects) c[p.category] += 1;
+    return c;
+  }, [projects]);
 
   if (loading) return <LoadingScreen text="READING MEMORY CARD" />;
   if (error || !data) {
     return (
       <div className="mx-auto max-w-xl p-8">
-        <Panel title="ERROR">
+        <Panel title="ERROR" icon="⚠">
           <p className="text-rec">! {error ?? "Could not load the portfolio"}</p>
           <button type="button" className="btn mt-4" onClick={() => void reload()}>
             Retry
@@ -40,7 +63,11 @@ export function PortfolioPage() {
     );
   }
 
-  const { profile, socialLinks, projects, experience, education } = data;
+  const { profile, socialLinks, experience, education, achievements } = data;
+  // Show a filter tab per category that has projects (all of them while editing).
+  const visibleCategories = CATEGORY_ORDER.filter((c) => editing || counts[c] > 0);
+  const shown = filter === "all" ? projects : projects.filter((p) => p.category === filter);
+  const drafts = projects.filter((p) => !p.published).length;
 
   const deleteProject = async (p: Project) => {
     if (!window.confirm(`Delete "${p.title}"? This can't be undone.`)) return;
@@ -62,13 +89,30 @@ export function PortfolioPage() {
     }
   };
 
+  const timelineProps = (kind: TimelineKind) => ({
+    editing,
+    onAdd: () => setDialog({ type: "timeline", kind, entry: null }),
+    onEdit: (entry: TimelineEntry) => setDialog({ type: "timeline", kind, entry }),
+    onDelete: (e: TimelineEntry) => void deleteEntry(e),
+  });
+
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8">
+      {editing && (
+        <div className="bevel flex flex-wrap items-center gap-3 px-3 py-2 text-ink">
+          <span className="label">✎ Owner mode</span>
+          <span className="text-xs">
+            Everything with an edit button is yours to change. Use “Visitor view” in the top bar to preview.
+          </span>
+          {drafts > 0 && <span className="label ml-auto text-rec">{drafts} draft(s) hidden from visitors</span>}
+        </div>
+      )}
+
       <ProfileHeader
         profile={profile}
         socialLinks={socialLinks}
         editing={editing}
-        onEditProfile={() => setDialog({ type: "profile" })}
+        onEditProfile={() => setDialog({ type: "profile", tab: "identity" })}
         onEditLinks={() => setDialog({ type: "links" })}
       />
 
@@ -76,7 +120,8 @@ export function PortfolioPage() {
         <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
           <Panel
             title="ABOUT.TXT"
-            actions={editing && <EditButton onClick={() => setDialog({ type: "profile" })} />}
+            icon="✎"
+            actions={editing && <EditButton onClick={() => setDialog({ type: "profile", tab: "about" })} />}
           >
             {profile.bio ? (
               <p className="prose-retro">{profile.bio}</p>
@@ -86,7 +131,9 @@ export function PortfolioPage() {
           </Panel>
           <Panel
             title="SKILLS.CFG"
-            actions={editing && <EditButton onClick={() => setDialog({ type: "profile" })} />}
+            icon="⚙"
+            actions={editing && <EditButton onClick={() => setDialog({ type: "profile", tab: "about" })} />}
+            status={`${profile.skills.length} skill(s)`}
           >
             {profile.skills.length ? (
               <ul className="flex flex-wrap gap-2">
@@ -109,16 +156,39 @@ export function PortfolioPage() {
             <p className="label text-phosphor-dim">DCIM / 100WBROST</p>
             <h2 className="font-display text-5xl leading-none text-silver-light">Projects</h2>
           </div>
-          <span className="stamp text-xl">{String(projects.length).padStart(3, "0")} SHOTS</span>
+          <span className="stamp text-xl">{String(shown.length).padStart(3, "0")} SHOTS</span>
         </div>
 
-        {projects.length === 0 && !editing ? (
-          <Panel title="EMPTY">
-            <p className="text-sm text-muted">No projects published yet. Check back soon.</p>
+        {/* Category filter, like folder tabs */}
+        {visibleCategories.length > 1 && (
+          <div role="tablist" aria-label="Filter projects" className="flex flex-wrap gap-1">
+            {(["all", ...visibleCategories] as Filter[]).map((f) => {
+              const active = filter === f;
+              const label = f === "all" ? "All" : CATEGORY_LABELS[f];
+              const count = f === "all" ? projects.length : counts[f];
+              return (
+                <button
+                  key={f}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setFilter(f)}
+                  className={active ? "btn" : "btn-lcd"}
+                >
+                  {label} <span className="opacity-70">[{count}]</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {shown.length === 0 && !editing ? (
+          <Panel title="EMPTY" icon="▢">
+            <p className="text-sm text-muted">No projects here yet. Check back soon.</p>
           </Panel>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {projects.map((p, i) => (
+            {shown.map((p, i) => (
               <ProjectCard
                 key={p.id}
                 project={p}
@@ -135,7 +205,9 @@ export function PortfolioPage() {
                 className="viewfinder flex min-h-64 cursor-pointer flex-col items-center justify-center gap-2 border-2 border-dashed border-phosphor-dim text-phosphor transition-colors hover:bg-lcd [--vf-color:var(--color-phosphor)]"
               >
                 <span className="font-display text-6xl leading-none">+</span>
-                <span className="label">New project</span>
+                <span className="label">
+                  New {filter === "all" ? "project" : CATEGORY_LABELS[filter].toLowerCase()}
+                </span>
               </button>
             )}
           </div>
@@ -146,22 +218,37 @@ export function PortfolioPage() {
         <TimelineSection
           title="EXPERIENCE.LOG"
           entries={experience}
-          editing={editing}
           emptyText="No experience added yet."
-          onAdd={() => setDialog({ type: "timeline", kind: "experience", entry: null })}
-          onEdit={(entry) => setDialog({ type: "timeline", kind: "experience", entry })}
-          onDelete={(e) => void deleteEntry(e)}
+          {...timelineProps("experience")}
         />
         <TimelineSection
           title="EDUCATION.LOG"
           entries={education}
-          editing={editing}
           emptyText="No education added yet."
-          onAdd={() => setDialog({ type: "timeline", kind: "education", entry: null })}
-          onEdit={(entry) => setDialog({ type: "timeline", kind: "education", entry })}
-          onDelete={(e) => void deleteEntry(e)}
+          {...timelineProps("education")}
         />
       </div>
+
+      <TimelineSection
+        title="ACHIEVEMENTS.LOG"
+        entries={achievements}
+        emptyText="No certifications or awards added yet."
+        {...timelineProps("achievement")}
+      />
+
+      {editing ? (
+        <Panel title="SEND_MESSAGE.EXE" icon="✉">
+          <p className="text-sm">
+            Visitors see a contact form here. Messages go to your{" "}
+            <RouterLink to="/inbox" className="text-amber underline">
+              inbox
+            </RouterLink>
+            . Switch to “Visitor view” to see the form.
+          </p>
+        </Panel>
+      ) : (
+        <ContactForm ownerName={profile.fullName.split(" ")[0] || profile.fullName} />
+      )}
 
       {/* Owner-only editors. The API rejects these writes for anyone else. */}
       {editing && (
@@ -169,6 +256,7 @@ export function PortfolioPage() {
           <ProfileEditor
             open={dialog?.type === "profile"}
             profile={profile}
+            initialTab={dialog?.type === "profile" ? dialog.tab : "identity"}
             onClose={close}
             onSaved={() => void reload()}
           />
@@ -181,6 +269,7 @@ export function PortfolioPage() {
           <ProjectEditor
             open={dialog?.type === "project"}
             project={dialog?.type === "project" ? dialog.project : null}
+            defaultCategory={filter === "all" ? "website" : filter}
             onClose={close}
             onSaved={() => void reload()}
           />

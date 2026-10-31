@@ -1,7 +1,7 @@
 import { Link as RouterLink } from "react-router";
 import { EditButton } from "../../components/ui/Misc";
 import { mediaUrl } from "../../lib/api";
-import type { Project } from "../../lib/types";
+import { CATEGORY_LABELS, STATUS_LABELS, type Project } from "../../lib/types";
 
 interface Props {
   project: Project;
@@ -13,11 +13,17 @@ interface Props {
 
 /** A project shown like a printed photo from a memory card, with its frame number. */
 export function ProjectCard({ project, index, editing, onEdit, onDelete }: Props) {
-  const cover = mediaUrl(project.coverMediaId);
+  // Fall back to the first gallery image when there's no cover.
+  const cover = mediaUrl(project.coverMediaId ?? project.images[0]?.mediaId);
   const frame = `No.${String(index + 1).padStart(3, "0")}`;
+  const meta = [CATEGORY_LABELS[project.category], project.year].filter(Boolean).join(" · ");
 
   return (
-    <article className="group bevel flex flex-col p-1 transition-transform hover:-translate-y-1">
+    <article
+      className={`group bevel flex flex-col p-1 transition-transform hover:-translate-y-1 ${
+        project.published ? "" : "opacity-75"
+      }`}
+    >
       <RouterLink
         to={`/portfolio/projects/${project.id}`}
         className="viewfinder lcd scanlines bevel-inset relative block aspect-video overflow-hidden [--vf-size:14px]"
@@ -35,12 +41,24 @@ export function ProjectCard({ project, index, editing, onEdit, onDelete }: Props
           </span>
         )}
         <span className="stamp absolute right-2 bottom-1 z-[3] text-lg">{frame}</span>
-        {project.featured && (
-          <span className="label absolute top-2 left-2 z-[3] bg-amber px-1.5 py-0.5 text-ink">★ Featured</span>
+        {project.images.length > 0 && (
+          <span className="label absolute bottom-2 left-2 z-[3] bg-black/70 px-1.5 py-0.5 text-silver-light">
+            ▣ {project.images.length}
+          </span>
         )}
+        <span className="absolute top-2 left-2 z-[3] flex gap-1">
+          {project.featured && <span className="label bg-amber px-1.5 py-0.5 text-ink">★ Featured</span>}
+          {!project.published && <span className="label bg-rec px-1.5 py-0.5 text-white">Draft</span>}
+        </span>
       </RouterLink>
 
       <div className="flex flex-1 flex-col gap-3 bg-body p-4">
+        <div className="flex items-center justify-between gap-2">
+          <span className="label text-phosphor-dim">{meta}</span>
+          {project.status !== "completed" && (
+            <span className="label text-amber">{STATUS_LABELS[project.status]}</span>
+          )}
+        </div>
         <RouterLink to={`/portfolio/projects/${project.id}`}>
           <h3 className="font-display text-3xl leading-none text-silver-light hover:text-phosphor">
             {project.title}
