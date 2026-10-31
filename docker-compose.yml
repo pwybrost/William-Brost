@@ -1,0 +1,16 @@
+# Runs the backend API in Docker. The database is Neon (hosted Postgres),
+# so there is no database container here: DATABASE_URL in backend/.env points at Neon.
+#
+#   docker compose up --build
+#
+services:
+  backend:
+    build: ./backend
+    container_name: william-brost-api
+    env_file: ./backend/.env
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+    ports:
+      - "4000:4000"
+    restart: unless-stopped
