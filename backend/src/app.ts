@@ -13,6 +13,7 @@ import { profileRouter } from "./modules/portfolio/profile.routes.js";
 import { projectsRouter } from "./modules/portfolio/projects.routes.js";
 import { timelineRouter } from "./modules/portfolio/timeline.routes.js";
 import { messagesRouter } from "./modules/messages/messages.routes.js";
+import { productsRouter } from "./modules/portfolio/products.routes.js";
 
 export function createApp() {
   const app = express();
@@ -43,6 +44,7 @@ export function createApp() {
   app.use("/api/projects", projectsRouter);
   app.use("/api/timeline", timelineRouter);
   app.use("/api/messages", messagesRouter);
+  app.use("/api/products", productsRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

@@ -3,6 +3,8 @@
 export const PROJECT_CATEGORIES = ["graphic_design", "website", "app", "other"] as const;
 export const PROJECT_STATUSES = ["completed", "in_progress", "concept"] as const;
 export const TIMELINE_KINDS = ["experience", "education", "achievement"] as const;
+export const PRODUCT_STATUSES = ["available", "coming_soon", "sold_out"] as const;
+export type ProductStatus = (typeof PRODUCT_STATUSES)[number];
 
 export type ProjectCategory = (typeof PROJECT_CATEGORIES)[number];
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
@@ -19,6 +21,8 @@ export interface ProfileRow {
   availability: string;
   avatar_media_id: string | null;
   cover_media_id: string | null;
+  wallpaper_media_id: string | null;
+  resume_media_id: string | null;
   updated_at: Date;
 }
 
@@ -43,6 +47,9 @@ export interface ProjectRow {
   year: string;
   status: ProjectStatus;
   published: boolean;
+  problem: string;
+  process: string;
+  outcome: string;
   created_at: Date;
   updated_at: Date;
 }
@@ -92,6 +99,8 @@ export const toProfile = (r: ProfileRow) => ({
   availability: r.availability,
   avatarMediaId: r.avatar_media_id,
   coverMediaId: r.cover_media_id,
+  wallpaperMediaId: r.wallpaper_media_id,
+  resumeMediaId: r.resume_media_id,
   updatedAt: r.updated_at,
 });
 
@@ -113,6 +122,9 @@ export const toProject = (r: ProjectRow, links: ProjectLinkRow[], images: Projec
   year: r.year,
   status: r.status,
   published: r.published,
+  problem: r.problem,
+  process: r.process,
+  outcome: r.outcome,
   createdAt: r.created_at,
   updatedAt: r.updated_at,
   links: links.filter((l) => l.project_id === r.id).map(toLink),
@@ -138,5 +150,31 @@ export const toMessage = (r: MessageRow) => ({
   subject: r.subject,
   body: r.body,
   isRead: r.is_read,
+  createdAt: r.created_at,
+});
+
+export interface ProductRow {
+  id: string;
+  name: string;
+  tagline: string;
+  price: string;
+  url: string;
+  media_id: string | null;
+  status: ProductStatus;
+  published: boolean;
+  sort_order: number;
+  created_at: Date;
+}
+
+export const toProduct = (r: ProductRow) => ({
+  id: r.id,
+  name: r.name,
+  tagline: r.tagline,
+  price: r.price,
+  url: r.url,
+  mediaId: r.media_id,
+  status: r.status,
+  published: r.published,
+  sortOrder: r.sort_order,
   createdAt: r.created_at,
 });

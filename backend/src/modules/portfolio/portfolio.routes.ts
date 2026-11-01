@@ -3,10 +3,12 @@ import { query } from "../../db/pool.js";
 import { isAdminRequest } from "../../middleware/auth.js";
 import {
   toLink,
+  toProduct,
   toProfile,
   toProject,
   toTimeline,
   type LinkRow,
+  type ProductRow,
   type ProfileRow,
   type ProjectImageRow,
   type ProjectLinkRow,
@@ -18,12 +20,12 @@ export const portfolioRouter = Router();
 
 /**
  * Everything the portfolio page needs, in one request. Public: guests can read it.
- * Draft (unpublished) projects are only included for the owner.
+ * Draft (unpublished) projects and products are only included for the owner.
  */
 portfolioRouter.get("/", async (req, res) => {
   const admin = await isAdminRequest(req);
 
-  const [profile, social, projects, projectLinks, projectImages, timeline] = await Promise.all([
+  const [profile, social, projects, projectLinks, projectImages, timeline, products] = await Promise.all([
     query<ProfileRow>("SELECT * FROM profile WHERE id = 1"),
     query<LinkRow>("SELECT * FROM social_links ORDER BY sort_order, label"),
     query<ProjectRow>(
@@ -34,6 +36,10 @@ portfolioRouter.get("/", async (req, res) => {
     query<ProjectLinkRow>("SELECT * FROM project_links ORDER BY sort_order"),
     query<ProjectImageRow>("SELECT * FROM project_images ORDER BY sort_order"),
     query<TimelineRow>("SELECT * FROM timeline_entries ORDER BY sort_order, start_date DESC"),
+    query<ProductRow>(
+      "SELECT * FROM products WHERE published OR $1 ORDER BY sort_order, created_at DESC",
+      [admin],
+    ),
   ]);
 
   const entries = timeline.rows.map(toTimeline);
@@ -44,5 +50,6 @@ portfolioRouter.get("/", async (req, res) => {
     experience: entries.filter((e) => e.kind === "experience"),
     education: entries.filter((e) => e.kind === "education"),
     achievements: entries.filter((e) => e.kind === "achievement"),
+    products: products.rows.map(toProduct),
   });
 });

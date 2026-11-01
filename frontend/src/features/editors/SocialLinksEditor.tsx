@@ -1,8 +1,9 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { ErrorLine } from "../../components/ui/Field";
+import { DialogButtons, ErrorLine } from "../../components/ui/Field";
 import { cleanLinks, LinkListEditor } from "../../components/ui/LinkListEditor";
 import { Modal } from "../../components/ui/Modal";
+import { GlobeIcon } from "../../components/win98/Icons";
 import { api, errorMessage } from "../../lib/api";
 import type { Link } from "../../lib/types";
 
@@ -15,7 +16,7 @@ interface Props {
 
 export function SocialLinksEditor({ open, links, onClose, onSaved }: Props) {
   return (
-    <Modal open={open} title="EDIT ACCOUNT LINKS" onClose={onClose} wide>
+    <Modal open={open} title="Account Links" icon={<GlobeIcon size={18} />} onClose={onClose} wide>
       {open && <LinksForm links={links} onClose={onClose} onSaved={onSaved} />}
     </Modal>
   );
@@ -43,19 +44,13 @@ function LinksForm({ links, onClose, onSaved }: Omit<Props, "open">) {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-5">
-      <p className="text-sm text-text">
-        Links to your accounts: GitHub, LinkedIn, Instagram, email, anything. Add as many as you want.
+      <p className="text-[15px] text-muted">
+        Links to your accounts: GitHub, LinkedIn, Behance, Instagram, anything. They show on Home and Contact. Add as
+        many as you want.
       </p>
       <LinkListEditor label="Accounts" links={draft} onChange={setDraft} max={30} />
       <ErrorLine message={error} />
-      <div className="flex justify-end gap-2">
-        <button type="button" className="btn-lcd" onClick={onClose}>
-          Cancel
-        </button>
-        <button type="submit" className="btn" disabled={busy}>
-          {busy ? "Saving..." : "Save"}
-        </button>
-      </div>
+      <DialogButtons busy={busy} onCancel={onClose} />
     </form>
   );
 }

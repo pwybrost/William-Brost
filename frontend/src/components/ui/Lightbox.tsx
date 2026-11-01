@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import { mediaUrl } from "../../lib/api";
 import type { ProjectImage } from "../../lib/types";
 import { PictureIcon } from "../win98/Icons";
-import { ToolButton } from "../win98/Window";
 import { TitleBar } from "./TitleBar";
 
 interface Props {
@@ -12,7 +11,7 @@ interface Props {
   onIndexChange: (index: number | null) => void;
 }
 
-/** Full-screen image viewer styled like the Windows 98 media "PLAYER". ← → keys browse. */
+/** Full-screen image viewer styled like the Windows 98 media player. ← → keys browse. */
 export function Lightbox({ images, index, onIndexChange }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
   const open = index !== null && images.length > 0;
@@ -31,39 +30,49 @@ export function Lightbox({ images, index, onIndexChange }: Props) {
   return (
     <dialog
       ref={ref}
+      aria-label="Image viewer"
       onClose={() => onIndexChange(null)}
       onKeyDown={(e) => {
         if (index === null) return;
         if (e.key === "ArrowLeft") go(index - 1);
         if (e.key === "ArrowRight") go(index + 1);
       }}
-      className="win98 win-raised m-auto h-[calc(100dvh-2rem)] max-h-none w-[calc(100%-2rem)] max-w-6xl flex-col p-[3px] backdrop:bg-black/80 open:flex"
+      className="win-raised m-auto h-[calc(100dvh-1.5rem)] max-h-none w-[calc(100%-1.5rem)] max-w-7xl flex-col p-[3px] backdrop:bg-black/85 open:flex open:animate-pop"
     >
       {image && index !== null && (
         <>
           <TitleBar
-            title={`PLAYER - IMG_${String(n).padStart(4, "0")}.JPG`}
-            icon={<PictureIcon size={14} />}
+            title={`Image Viewer - ${image.caption || `IMG_${String(n).padStart(4, "0")}.JPG`}`}
+            icon={<PictureIcon size={16} />}
             onClose={() => onIndexChange(null)}
           />
-          <div className="flex items-center gap-1 px-1 py-1">
-            <ToolButton label="Previous" onClick={() => go(index - 1)} disabled={images.length < 2}>
-              ←
-            </ToolButton>
-            <ToolButton label="Next" onClick={() => go(index + 1)} disabled={images.length < 2}>
-              →
-            </ToolButton>
-            <span className="ml-2 truncate text-[12px]">{image.caption || "No caption"}</span>
-          </div>
-          <div className="win-sunken relative flex min-h-0 flex-1 items-center justify-center bg-black! p-2">
+          <div className="relative mt-[3px] flex min-h-0 flex-1 items-center justify-center bg-black p-2">
+            {/* key restarts the fade-in for every image */}
             <img
+              key={image.mediaId}
               src={mediaUrl(image.mediaId) ?? ""}
               alt={image.caption}
-              className="max-h-full max-w-full object-contain"
+              className="max-h-full max-w-full animate-pop object-contain"
             />
           </div>
-          {/* seek bar = position in the gallery */}
-          <div className="flex items-center gap-2 px-2 pt-2">
+          <div className="flex flex-wrap items-center gap-2 px-2 pt-2 pb-1">
+            <button type="button" className="win-button px-3" onClick={() => go(0)} aria-label="First image">
+              ⏮
+            </button>
+            <button type="button" className="win-button px-3" onClick={() => go(index - 1)} aria-label="Previous image">
+              ◀
+            </button>
+            <button type="button" className="win-button px-3" onClick={() => go(index + 1)} aria-label="Next image">
+              ▶
+            </button>
+            <button
+              type="button"
+              className="win-button px-3"
+              onClick={() => go(images.length - 1)}
+              aria-label="Last image"
+            >
+              ⏭
+            </button>
             <input
               type="range"
               min={1}
@@ -71,29 +80,11 @@ export function Lightbox({ images, index, onIndexChange }: Props) {
               value={n}
               onChange={(e) => go(Number(e.target.value) - 1)}
               aria-label="Image position"
-              className="flex-1 accent-[#000080]"
+              className="min-w-32 flex-1 accent-[var(--wb-accent)]"
             />
-            <span className="win-sunken px-2 py-0.5 font-mono text-[11px]">
-              {String(n).padStart(2, "0")}/{String(images.length).padStart(2, "0")}
+            <span className="win-thin px-2 py-1 font-mono text-[13px]">
+              {n} / {images.length}
             </span>
-          </div>
-          <div className="flex items-center gap-1 px-1 py-1.5">
-            <ToolButton label="First image" onClick={() => go(0)}>
-              ⏮
-            </ToolButton>
-            <ToolButton label="Previous image" onClick={() => go(index - 1)}>
-              ◀◀
-            </ToolButton>
-            <ToolButton label="Next image" onClick={() => go(index + 1)}>
-              ▶▶
-            </ToolButton>
-            <ToolButton label="Last image" onClick={() => go(images.length - 1)}>
-              ⏭
-            </ToolButton>
-            <ToolButton label="Stop" onClick={() => onIndexChange(null)}>
-              ■
-            </ToolButton>
-            <span className="ml-auto text-[11px] text-[#404040]">← → to browse</span>
           </div>
         </>
       )}

@@ -128,4 +128,34 @@ export const migrations: { id: string; sql: string }[] = [
       CREATE INDEX messages_created_idx ON messages(created_at DESC);
     `,
   },
+  {
+    id: "003_full_site",
+    sql: /* sql */ `
+      -- Case-study sections for project pages.
+      ALTER TABLE projects
+        ADD COLUMN problem TEXT NOT NULL DEFAULT '',
+        ADD COLUMN process TEXT NOT NULL DEFAULT '',
+        ADD COLUMN outcome TEXT NOT NULL DEFAULT '';
+
+      -- Custom desktop wallpaper and an uploaded resume PDF.
+      ALTER TABLE profile
+        ADD COLUMN wallpaper_media_id UUID REFERENCES media(id) ON DELETE SET NULL,
+        ADD COLUMN resume_media_id    UUID REFERENCES media(id) ON DELETE SET NULL;
+
+      -- Products shown under the bio on the home page (e.g. future fashion items).
+      CREATE TABLE products (
+        id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name       TEXT NOT NULL,
+        tagline    TEXT NOT NULL DEFAULT '',
+        price      TEXT NOT NULL DEFAULT '',
+        url        TEXT NOT NULL DEFAULT '',
+        media_id   UUID REFERENCES media(id) ON DELETE SET NULL,
+        status     TEXT NOT NULL DEFAULT 'available'
+          CHECK (status IN ('available', 'coming_soon', 'sold_out')),
+        published  BOOLEAN NOT NULL DEFAULT true,
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      );
+    `,
+  },
 ];
